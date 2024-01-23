@@ -1,0 +1,9 @@
+.env
+.idea/
+.venv/
+.virtualenv/
+/shelf/
+/workspace.xml
+pycache/
+venv/
+tests/
