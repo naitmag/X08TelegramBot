@@ -2,10 +2,11 @@ import datetime
 import json
 import time
 
+import pytz
 import requests
 from pytz import timezone
 
-from config import bot, GROUP_ID, CITY, API_WEATHER
+from config import bot, GROUP_ID, CITY, API_WEATHER, WEATHER_TIME
 
 
 def send_weather():
@@ -21,6 +22,6 @@ def send_weather():
 
 def bot_background():
     while True:
-        if timezone('Europe/Minsk').localize(datetime.datetime.now()).strftime("%H%M%S") == "213120":
+        if datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S") == WEATHER_TIME:
             send_weather()
         time.sleep(1)
