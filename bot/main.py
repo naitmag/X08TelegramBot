@@ -2,7 +2,7 @@ import threading
 
 from config import bot
 from handlers import manage_cabs, show_author
-from bot.background import bot_background
+from background import bot_background
 
 
 def main():
