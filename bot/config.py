@@ -1,6 +1,10 @@
+from datetime import datetime
+
 import telebot
 
 from environs import Env
+
+from read import read_lessons
 
 env = Env()
 env.read_env()
@@ -14,3 +18,7 @@ WEATHER_TIME = env.str('WEATHER_TIME')
 bot = telebot.TeleBot(TOKEN)
 
 cabinets_info = {"cabinets": [], "author": ''}
+
+schedule = read_lessons('bot/data/lessons.txt')
+
+start_lessons = datetime(2023, 9, 4)
