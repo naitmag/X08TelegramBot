@@ -14,6 +14,7 @@ GROUP_ID = env.int('GROUP_ID')
 API_WEATHER = env.str('API_WEATHER')
 CITY = env.str('CITY')
 WEATHER_TIME = env.str('WEATHER_TIME')
+SCHEDULE_TIME = env.str('SCHEDULE_TIME')
 
 bot = telebot.TeleBot(TOKEN)
 
