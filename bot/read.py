@@ -14,6 +14,7 @@ define_week = {
     5: "🛌 Суббота"
 }
 
+
 def read_lessons(path: str) -> dict:
     with open(path, encoding='utf-8') as file:
         file = file.read()
@@ -38,6 +39,3 @@ def check_week(interval: str, week: int) -> False:
     if len(args) == 1:
         return args[0] == week
     return week in range(args[0], args[1] + 1)
-
-
-

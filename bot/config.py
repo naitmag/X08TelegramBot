@@ -15,11 +15,15 @@ API_WEATHER = env.str('API_WEATHER')
 CITY = env.str('CITY')
 WEATHER_TIME = env.str('WEATHER_TIME')
 SCHEDULE_TIME = env.str('SCHEDULE_TIME')
+CABINETS_CLEAR_TIME = env.str('CABINETS_CLEAR_TIME')
+
+ADMIN_ID = env.int('ADMIN_ID')
+PERMISSIONS = env.dict('PERMISSIONS')
 
 bot = telebot.TeleBot(TOKEN)
 
-cabinets_info = {"cabinets": [], "author": ''}
+cabinets_info = {"cabinets": [], "author": {}}
 
-schedule = read_lessons('bot/data/lessons.txt')
+schedule = read_lessons('./bot/data/lessons.txt')
 
-start_lessons = datetime(2023, 9, 4)
+START_LESSONS = datetime(2023, 9, 4)

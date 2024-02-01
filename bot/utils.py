@@ -4,7 +4,7 @@ from datetime import datetime
 from telebot import types
 import requests
 
-from config import bot, GROUP_ID, CITY, API_WEATHER, start_lessons, schedule as sched
+from config import bot, GROUP_ID, CITY, API_WEATHER, START_LESSONS, schedule as sched, PERMISSIONS
 from read import define_time, check_week, define_week
 
 
@@ -23,7 +23,7 @@ def send_weather(target: int = None):
 
 def get_schedule(schedule: dict, week: int = None, day_of_week: int = None) -> str:
     if not week:
-        week = ((datetime(2023, 12, 4) - start_lessons).days + 1) // 7 + 1
+        week = ((datetime(2023, 12, 4) - START_LESSONS).days + 1) // 7 + 1
     if day_of_week is None:
         result = f'<b><em>📆 Расписание на неделю {week}</em></b>\n\n'
         days = schedule.items()
@@ -48,8 +48,47 @@ def get_schedule(schedule: dict, week: int = None, day_of_week: int = None) -> s
 
 def send_schedule(week: int = None, day_of_week: int = None, target: int = None):
     markup = types.InlineKeyboardMarkup()
-    button1 = types.InlineKeyboardButton("<<", callback_data="back")
-    button2 = types.InlineKeyboardButton(">>", callback_data="next")
+    button1 = types.InlineKeyboardButton("◀️", callback_data="back")
+    button2 = types.InlineKeyboardButton("▶️", callback_data="next")
     markup.row(button1, button2)
     bot.send_message(target if target else GROUP_ID, get_schedule(sched, week, day_of_week), parse_mode='html',
                      reply_markup=markup)
+
+
+def add_lesson(week: str, day_of_week: int, lesson_number: int, name: str, teacher: str = "-",
+               lesson_type: str = 'доп'):
+    day_of_week %= 7
+    lesson_number %= 5
+
+    if sched[day_of_week].get(lesson_number) is None:
+        sched[day_of_week][lesson_number] = []
+
+    sched[day_of_week][lesson_number].append(f"{week} {lesson_type} {name} {teacher}")
+
+
+def detect_user(message) -> str:
+    return f"@{message.from_user.username}" if message.from_user.username else message.from_user.first_name
+
+
+def check_permissions(user_id: int, requirement_level: int) -> bool:
+    return int(PERMISSIONS[f"{user_id}"]) if PERMISSIONS.get(f"{user_id}") else 0 >= requirement_level
+
+
+def random_element(args: list) -> str:
+    return args[random.randint(0, len(args) - 1)]
+
+
+def teachers_by_day(day_of_week) -> str:
+    days = [list(sched.items())[day_of_week]]
+    result = []
+
+    for day_i, day in days:
+        for lessons_i, lessons in day.items():
+            for lesson in lessons:
+                field = (f"{lesson.split()[1]} "
+                         f"<em>{lesson.split()[2][0:12].capitalize().replace('_', ' ')}{".." if len(lesson.split()[2]) > 15 else ''}</em> "
+                         f"<b>{' '.join(lesson.split()[3:])}</b>")
+                if field not in result:
+                    result.append(field)
+    result.sort()
+    return f"<u>{define_week[day_of_week]}</u>\n{'\n'.join(result)}"
