@@ -4,7 +4,8 @@ import time
 from pytz import timezone
 
 from config import WEATHER_TIME, SCHEDULE_TIME, CABINETS_CLEAR_TIME, cabinets_info
-from utils import send_weather, send_schedule
+from handlers import send_schedule
+from utils import send_weather
 
 
 def bot_background():
