@@ -8,15 +8,19 @@ from handlers import send_schedule
 from utils import send_weather
 
 
+def auto_messages_control():
+    current_time = datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S")
+    if current_time == WEATHER_TIME:
+        send_weather()
+        print('[*]WEATHER SENT')
+    if current_time == SCHEDULE_TIME and datetime.datetime.now().weekday() == 5:
+        send_schedule()
+        print('[*]SCHEDULE SENT')
+    if current_time == CABINETS_CLEAR_TIME:
+        cabinets_info['author'] = {}
+
+
 def bot_background():
     while True:
-        if datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S") == WEATHER_TIME:
-            send_weather()
-            print('[*]WEATHER SENT')
-        if (datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S") == SCHEDULE_TIME
-                and datetime.datetime.now().weekday() == 6):
-            send_schedule()
-            print('[*]SCHEDULE SENT')
-        if datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S") == CABINETS_CLEAR_TIME:
-            cabinets_info['author'] = {}
+        auto_messages_control()
         time.sleep(1)

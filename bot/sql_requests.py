@@ -4,8 +4,11 @@ import sqlite3 as sq
 def create_user(telegram_id: int, name: str, lastname: str, username: str):
     with sq.connect('data/users.db') as con:
         cur = con.cursor()
-        cur.execute(f"""INSERT INTO users (name,lastname,username,telegram_id)
-                        VALUES ('{name}', '{lastname}', '{username}', {telegram_id})""")
+        cur.execute(f"""INSERT OR IGNORE INTO users (name, lastname, username, telegram_id)
+                SELECT '{name}', '{lastname}', '{username}', {telegram_id}
+                WHERE NOT EXISTS (
+                SELECT 1 FROM users WHERE telegram_id = {telegram_id} 
+                );""")
 
 
 def update_user_level(request, level):
@@ -61,11 +64,17 @@ def get_schedule(week: int = None, day_of_the_week: int = None) -> list:
 
         if day_of_the_week is None:
             data = cur.execute(
-                f"""SELECT * FROM lessons WHERE start <= {week} AND end >= {week} ORDER BY day_of_the_week ASC""")
+                f"""SELECT * FROM lessons WHERE start <= {week} 
+                AND end >= {week} 
+                ORDER BY day_of_the_week, lesson_number ASC""")
 
         else:
             data = cur.execute(
-                f"""SELECT * FROM lessons WHERE start <= {week} AND end >= {week} AND day_of_the_week == {day_of_the_week} ORDER BY day_of_the_week ASC""")
+                f"""SELECT * FROM lessons 
+                WHERE start <= {week} 
+                AND end >= {week} 
+                AND day_of_the_week == {day_of_the_week} 
+                ORDER BY day_of_the_week, lesson_number ASC""")
 
     return data.fetchall()
 
@@ -75,12 +84,12 @@ def get_teacher(request) -> list:
         cur = con.cursor()
 
         data = cur.execute(
-            f"""SELECT * FROM lessons WHERE name LIKE '%{request[1:]}%' OR teacher like '%{request[1:]}%'""")
+            f"""SELECT * FROM lessons WHERE name LIKE '%{request[1:]}%' OR teacher LIKE '%{request[1:]}%'""")
     return data.fetchall()
 
 
-def create_lesson(interval: str, day_of_the_week: int, lesson_number: int, name: str, lesson_type: str = '-',
-                  teacher: str = '-'):
+def create_lesson(interval: str, day_of_the_week: int, lesson_number: int, name: str, lesson_type: str = 'доп.',
+                  teacher: str = 'преп. неизвестно'):
     interval = interval.split('-')
     start = interval[0]
     end = interval[0] if len(interval) <= 1 else interval[1]
@@ -100,3 +109,23 @@ def create_lesson(interval: str, day_of_the_week: int, lesson_number: int, name:
                 AND end = {end} 
                 AND teacher ='{teacher}'
                 );""")
+
+
+def delete_lesson(day_of_the_week: int, lesson_number: int, name: str):
+    with sq.connect('data/lessons.db') as con:
+        cur = con.cursor()
+        data = cur.execute(
+            f"""SELECT * FROM lessons WHERE 
+            day_of_the_week == {day_of_the_week} 
+            AND lesson_number == {lesson_number} 
+            AND name LIKE '%{name[1:]}%'""")
+
+        data = data.fetchall()
+        if len(data) == 1:
+            cur.execute(
+                    f"""DELETE FROM lessons WHERE 
+                        day_of_the_week == {day_of_the_week} 
+                        AND lesson_number == {lesson_number} 
+                        AND name LIKE '%{name[1:]}%'""")
+
+        return data

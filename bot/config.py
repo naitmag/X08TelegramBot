@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import telebot
+from telebot import apihelper
 
 from environs import Env
-
 
 env = Env()
 env.read_env()
@@ -16,14 +16,29 @@ WEATHER_TIME = env.str('WEATHER_TIME')
 SCHEDULE_TIME = env.str('SCHEDULE_TIME')
 CABINETS_CLEAR_TIME = env.str('CABINETS_CLEAR_TIME')
 
-ADMIN_ID = env.int('ADMIN_ID')
-PERMISSIONS = env.dict('PERMISSIONS')
+START_LESSONS = datetime(2024, 2, 12)
 
-bot = telebot.TeleBot(TOKEN)
+ADMIN_ID = env.int('ADMIN_ID')
+
+bot = telebot.TeleBot(TOKEN, use_class_middlewares=True)
+apihelper.ENABLE_MIDDLEWARE = True
 
 cabinets_info = {"cabinets": [], "author": {}}
 
-days = ("пн", "вт", "ср", "чт", "пт", "сб")
+days = {
+    0: "пн",
+    1: "вт",
+    2: "ср",
+    3: "чт",
+    4: "пт",
+    5: "сб",
+    "пн": 0,
+    "вт": 1,
+    "ср": 2,
+    "чт": 3,
+    "пт": 4,
+    "сб": 5,
+}
 
 define_week = {
     0: "🫨 Понедельник",
@@ -39,7 +54,7 @@ define_time = {
     1: "9:35",
     2: "11:10",
     3: "13:00",
-    4: "14:35"
+    4: "14:20"
 }
 
 pages = {
@@ -91,12 +106,10 @@ pages = {
             f"\n- <b>Пример:</b> <code>/id</code>",
 
     "contacts": f"📇<b>Контакты:</b>\n"
-                f"\n<i><u>Instagram</u></i>"
-                f"\n- <a href='https://www.instagram.com/itinculture/'>Instagram кафедры</a>"
-                f"\n- <a href='https://www.instagram.com/208itk'>Instagram группы</a>"
-                f"\n\n<i><u>Обратная связь</u></i>:"
+                f"\n📷 <i><b>Инстаграм</b></i>"
+                f"\n- <a href='https://www.instagram.com/itinculture/'>Кафедра ИТК</a>"
+                f"\n- <a href='https://www.instagram.com/208itk'>Группа 208</a>"
+                f"\n\n👤 <i><b>Обратная связь</b></i>:"
                 f"\n- <a href='https://t.me/naitmag'>Создатель бота</a>"
 
 }
-
-START_LESSONS = datetime(2023, 9, 4)
