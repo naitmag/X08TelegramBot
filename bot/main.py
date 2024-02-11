@@ -3,55 +3,67 @@ import threading
 from background import bot_background
 from config import bot
 from handlers import manage_cabs, show_author, weather_request, \
-    random_request, send_id, wrong_chat_type, start_greetings, send_contacts, \
-    send_guide, pages_button, home_page, delete_button, send_schedule, send_teacher, add_lesson, scroll_schedule, \
-    set_permission, remove_lesson
-from user_processing_middleware import Middleware
+    random_request, send_id, wrong_chat_type, start_greetings, \
+    send_guide, pages_button, home_page, send_schedule, send_teacher, add_lesson, scroll_schedule, \
+    set_permission, remove_lesson, admin_guide, show_permission, delete_button, switch_admin_mode
+from user_processing_middleware import Middleware, IsAllowed, IsAdmin, IsEditor, IsHeadman, IsClassmate
 
 from utils import clear_database, read_database
 
 
 def main():
-    print("[+]BOT 2 STARTED")
+    print("[+]BOT STARTED")
 
     other_action_thread = threading.Thread(target=bot_background)
     other_action_thread.start()
 
     bot.setup_middleware(Middleware())
 
-    bot.register_message_handler(send_contacts, commands=['contacts'], chat_types=['private'])
+    bot.add_custom_filter(IsAdmin())
+    bot.add_custom_filter(IsHeadman())
+    bot.add_custom_filter(IsEditor())
+    bot.add_custom_filter(IsAllowed())
+    bot.add_custom_filter(IsClassmate())
+
     bot.register_message_handler(start_greetings, commands=['start'], chat_types=['private'])
-    bot.register_message_handler(read_database, commands=['read'], chat_types=['private'])
-    bot.register_message_handler(clear_database, commands=['drop'], chat_types=['private'])
+    bot.register_message_handler(random_request, commands=['random', 'r'], chat_types=['private'], is_allowed=True)
+    bot.register_message_handler(read_database, commands=['read'], chat_types=['private'], is_admin=True)
+    bot.register_message_handler(clear_database, commands=['drop'], chat_types=['private'], is_admin=True)
+    bot.register_message_handler(admin_guide, commands=['admin'], chat_types=['private'])
+    bot.register_message_handler(switch_admin_mode, commands=['am'], chat_types=['private'])
 
-    bot.register_message_handler(set_permission, commands=['perm'])
+    bot.register_message_handler(set_permission, commands=['set'], is_admin=True)
+    bot.register_message_handler(show_permission, commands=['perm'], is_admin=True)
+
+    bot.register_message_handler(weather_request, commands=['weather', 'w'], chat_types=['supergroup'], is_allowed=True)
+    bot.register_message_handler(manage_cabs, commands=['cabinets', 'c'], is_classmate=True)
+    bot.register_message_handler(add_lesson, commands=['add'], chat_types=['supergroup'], is_editor=True)
+    bot.register_message_handler(remove_lesson, commands=['remove'], chat_types=['supergroup'], is_editor=True)
+    bot.register_message_handler(send_teacher, commands=['teacher', 't'], is_classmate=True)
+    bot.register_message_handler(random_request, commands=['random', 'r'], chat_types=['supergroup'], is_headman=True)
 
     bot.register_message_handler(wrong_chat_type,
-                                 commands=['schedule', 'cabinets', 'add', 'teacher'],
-                                 chat_types=['private'])
+                                 commands=['add'],
+                                 chat_types=['private'], is_editor=True)
     bot.register_message_handler(wrong_chat_type,
-                                 commands=['start', 'contacts'],
-                                 chat_types=['supergroup'])
+                                 commands=['start', 'admin'],
+                                 chat_types=['supergroup'], is_allowed=True)
 
-    bot.register_message_handler(send_schedule, commands=['schedule', 's'], chat_types=['supergroup'])
-    bot.register_message_handler(weather_request, commands=['weather', 'w'], chat_types=['supergroup'])
-    bot.register_message_handler(manage_cabs, commands=['cabinets', 'c'], chat_types=['supergroup'])
-    bot.register_message_handler(add_lesson, commands=['add'], chat_types=['supergroup'])
-    bot.register_message_handler(remove_lesson, commands=['remove'], chat_types=['supergroup'])
-    bot.register_message_handler(send_teacher, commands=['teacher', 't'], chat_types=['supergroup'])
-
-    bot.register_message_handler(random_request, commands=['random', 'r'])
+    bot.register_message_handler(send_schedule, commands=['schedule', 's'], is_classmate=True)
     bot.register_message_handler(send_id, commands=['id'])
     bot.register_message_handler(send_guide, commands=['help'])
 
     bot.register_message_handler(manage_cabs, content_types=['text'],
-                                 func=lambda message: message.text.lower().startswith("каб"), chat_types=['supergroup'])
+                                 func=lambda message: message.text.lower().startswith("каб"), chat_types=['supergroup'],
+                                 is_classmate=True)
 
     bot.register_callback_query_handler(home_page, func=lambda callback: callback.data == "home")
-    bot.register_callback_query_handler(pages_button, func=lambda callback: callback.data in ["help", "contacts"])
     bot.register_callback_query_handler(delete_button, func=lambda callback: callback.data == "hide")
+    bot.register_callback_query_handler(pages_button,
+                                        func=lambda callback: callback.data in ["help", "contacts", "roles"])
     bot.register_callback_query_handler(show_author, func=lambda callback: callback.data == "author")
-    bot.register_callback_query_handler(scroll_schedule, func=lambda callback: callback.data in ["next", "back"])
+    bot.register_callback_query_handler(scroll_schedule, func=lambda callback: callback.data in ["next", "back"],
+                                        is_allowed=True)
 
     bot.polling()
 

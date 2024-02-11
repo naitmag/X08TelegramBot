@@ -19,10 +19,10 @@ def update_user_level(request, level):
     return data
 
 
-def get_user(telegram_id: int) -> list:
+def get_user(request: str or int) -> list:
     with sq.connect('data/users.db') as con:
         cur = con.cursor()
-        data = cur.execute(f"""SELECT * FROM users WHERE telegram_id == {telegram_id} LIMIT 1""")
+        data = cur.execute(f"""SELECT * FROM users WHERE username = '{request}' OR telegram_id = '{request}'""")
     data = data.fetchall()
 
     return data[0] if data else []
@@ -123,7 +123,7 @@ def delete_lesson(day_of_the_week: int, lesson_number: int, name: str):
         data = data.fetchall()
         if len(data) == 1:
             cur.execute(
-                    f"""DELETE FROM lessons WHERE 
+                f"""DELETE FROM lessons WHERE 
                         day_of_the_week == {day_of_the_week} 
                         AND lesson_number == {lesson_number} 
                         AND name LIKE '%{name[1:]}%'""")

@@ -1,19 +1,21 @@
 import json
 import random
 from datetime import datetime, timedelta
-from pytz import timezone
 from pathlib import Path
+
 import requests
+from pytz import timezone
 from telebot import types
 
+import config
 from config import bot, GROUP_ID, CITY, API_WEATHER, START_LESSONS, define_week, define_time, ADMIN_ID
-from sql_requests import get_schedule, drop_database, read_txt, get_user, create_user
+from sql_requests import get_schedule, drop_database, read_txt, get_user
 
 
 def send_weather(target: int = None):
     res = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_WEATHER}&units=metric')
     data = json.loads(res.text)
-    bot_reply = (f"<b>⛅️Погода {datetime.now(tz=timezone("Europe/Minsk")).strftime("%H:%M")}:</b>\n"
+    bot_reply = (f"<b>⛅️Погода {datetime.now(tz=timezone("Europe/Minsk")).strftime("%H:%M")}</b>\n"
                  f"\n🌡 Температура: <b>{round(data['main']['temp'])}°C</b>"
                  f"\n🧍 Ощущается как <b>{round(data['main']['feels_like'])}</b>°C"
                  f"\n💧 Влажность: <b>{data['main']['humidity']}%</b>")
@@ -30,14 +32,14 @@ def detect_user(data: types.Message | types.CallbackQuery) -> str:
 
 
 def check_permissions(message: types.Message, requirement_level: int) -> bool:
-    if message.from_user.id == ADMIN_ID:
+    if config.admin_mode and message.from_user.id == ADMIN_ID:
         return True
 
     userdata = get_user(message.from_user.id)
 
     access = userdata[5] >= requirement_level
 
-    if not access:
+    if not access and type(message) is types.Message:
         bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
 
     return access
@@ -71,7 +73,8 @@ def format_schedule(week: int = None, day_of_the_week: int = None) -> str:
         if lesson[0] != day and day < 5:
             day = lesson[0]
 
-            result += f"\n<i><u>{define_week[lesson[0]]}</u> {(monday_day + timedelta(days=lesson[0])).strftime("%d.%m")}</i>\n"
+            result += (f"\n<i><u>{define_week[lesson[0]]}</u> "
+                       f"{(monday_day + timedelta(days=lesson[0])).strftime("%d.%m")}</i>\n")
 
         result += f"<b>- {define_time[lesson[1]]}</b> <i>{lesson[2]} {" ".join(lesson[3:4])}</i>\n"
 
@@ -84,19 +87,17 @@ def format_teacher(data) -> str:
         item = f" - <i><b>{" ".join(item[2:4])}</b></i> :\n {(' '.join(item[6:]))}"
         if item not in result_list:
             result_list.append(item)
-
+    result_list.sort()
     result = "\n".join(result_list)
 
     return result
 
 
 def read_database(message: types.Message):
-    if check_permissions(message, 5):
-        print(f"[S]{detect_user(message)} READING TXT FILE")
-        read_txt()
+    print(f"[A]{detect_user(message)} READING TXT FILE")
+    read_txt()
 
 
 def clear_database(message: types.Message):
-    if check_permissions(message, 5):
-        print(f"[S]{detect_user(message)} DROPPED DATABASE")
-        drop_database()
+    print(f"[A]{detect_user(message)} DROPPED DATABASE")
+    drop_database()
