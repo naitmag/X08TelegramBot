@@ -15,7 +15,7 @@ from sql_requests import get_schedule, drop_database, read_txt, get_user
 def send_weather(target: int = None):
     res = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_WEATHER}&units=metric')
     data = json.loads(res.text)
-    bot_reply = (f"<b>⛅️Погода {datetime.now(tz=timezone("Europe/Minsk")).strftime('%H:%M')}</b>\n"
+    bot_reply = (f"<b>⛅️Погода {datetime.now(tz=timezone('Europe/Minsk')).strftime('%H:%M')}</b>\n"
                  f"\n🌡 Температура: <b>{round(data['main']['temp'])}°C</b>"
                  f"\n🧍 Ощущается как <b>{round(data['main']['feels_like'])}</b>°C"
                  f"\n💧 Влажность: <b>{data['main']['humidity']}%</b>")
@@ -28,7 +28,7 @@ def send_weather(target: int = None):
 
 
 def detect_user(data: types.Message | types.CallbackQuery) -> str:
-    return data.from_user.username if data.from_user.username else data.from_user.first_name
+    return f"@{data.from_user.username}" if data.from_user.username else data.from_user.first_name
 
 
 def detect_chat(data: types.Message) -> str:

@@ -187,7 +187,7 @@ def remove_lesson(message: types.Message):
                              parse_mode="html")
         else:
             bot.send_message(message.chat.id,
-                             f"<b>❌ {"Слишком много результатов!" if len(data) > 1 else "Нет результатов"}</b>\n",
+                             f"<b>❌ {'Слишком много результатов!' if len(data) > 1 else 'Нет результатов'}</b>\n",
                              parse_mode='html')
 
 
