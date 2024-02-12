@@ -29,8 +29,8 @@ def start_greetings(message: types.Message):
 
 def switch_admin_mode(message: types.Message):
     if message.from_user.id == ADMIN_ID:
-        config.ADMIN_mode = not config.ADMIN_mode
-        bot.send_message(message.chat.id, f"🔐 Режим админа теперь: {config.ADMIN_mode}")
+        config.admin_mode = not config.admin_mode
+        bot.send_message(message.chat.id, f"🔐 Режим админа теперь: {config.admin_mode}")
     else:
         bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
 

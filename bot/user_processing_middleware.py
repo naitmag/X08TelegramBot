@@ -25,7 +25,7 @@ class Middleware(BaseMiddleware):
 
 
 class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
-    # Class will check whether the user is admin or creator in group or not
+    # Class will check whether the user is admin or not
     key = 'is_admin'
 
     @staticmethod
@@ -37,7 +37,7 @@ class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
 
 
 class IsHeadman(telebot.custom_filters.SimpleCustomFilter):
-    # Class will check whether the user is admin or creator in group or not
+    # Class will check whether the user is headman or not
     key = 'is_headman'
 
     @staticmethod
@@ -49,7 +49,7 @@ class IsHeadman(telebot.custom_filters.SimpleCustomFilter):
 
 
 class IsEditor(telebot.custom_filters.SimpleCustomFilter):
-    # Class will check whether the user is admin or creator in group or not
+    # Class will check whether the user is editor or not
     key = 'is_editor'
 
     @staticmethod
@@ -61,6 +61,7 @@ class IsEditor(telebot.custom_filters.SimpleCustomFilter):
 
 
 class IsClassmate(telebot.custom_filters.SimpleCustomFilter):
+    # Class will check whether the user is classmate or not
     key = 'is_classmate'
 
     @staticmethod
@@ -72,6 +73,7 @@ class IsClassmate(telebot.custom_filters.SimpleCustomFilter):
 
 
 class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
+    # Class will check whether the user has access or not
     key = 'is_allowed'
 
     @staticmethod
@@ -83,6 +85,7 @@ class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
 
 
 class ContainsEventWord(telebot.custom_filters.SimpleCustomFilter):
+    # Class will check whether the message contains the event word
     key = 'has_event_word'
 
     @staticmethod
