@@ -7,3 +7,4 @@
 pycache/
 venv/
 tests/
+bot/data/users.db

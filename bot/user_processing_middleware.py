@@ -2,7 +2,8 @@ import telebot
 from telebot import BaseMiddleware, types
 
 from sql_requests import create_user
-from utils import check_permissions, detect_user
+from utils import check_permissions, detect_user, detect_chat
+from config import events
 
 
 class Middleware(BaseMiddleware):
@@ -31,7 +32,7 @@ class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
     def check(message: types.Message):
         result = check_permissions(message, 5)
         if not result:
-            print(f"[-]{detect_user(message)} don't have permissons 5: {message.text}")
+            print(f"[-]({detect_chat(message)}){detect_user(message)} don't have permissons 5: {message.text}")
         return result
 
 
@@ -43,7 +44,7 @@ class IsHeadman(telebot.custom_filters.SimpleCustomFilter):
     def check(message: types.Message):
         result = check_permissions(message, 4)
         if not result:
-            print(f"[-]{detect_user(message)} don't have permissons 4: {message.text}")
+            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 4: {message.text}")
         return result
 
 
@@ -55,7 +56,7 @@ class IsEditor(telebot.custom_filters.SimpleCustomFilter):
     def check(message: types.Message):
         result = check_permissions(message, 3)
         if not result:
-            print(f"[-]{detect_user(message)} don't have permissons 3: {message.text}")
+            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 3: {message.text}")
         return result
 
 
@@ -66,7 +67,7 @@ class IsClassmate(telebot.custom_filters.SimpleCustomFilter):
     def check(message: types.Message):
         result = check_permissions(message, 1)
         if not result:
-            print(f"[-]{detect_user(message)} don't have permissons 1: {message.text}")
+            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 1: {message.text}")
         return result
 
 
@@ -77,5 +78,17 @@ class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
     def check(message: types.Message):
         result = check_permissions(message, 0)
         if not result:
-            print(f"[-]{detect_user(message)} don't have permissons 0: {message.text}")
+            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 0: {message.text}")
         return result
+
+
+class ContainsEventWord(telebot.custom_filters.SimpleCustomFilter):
+    key = 'has_event_word'
+
+    @staticmethod
+    def check(message: types.Message):
+        check_list = list(events['text'].items())
+        for item in check_list:
+            if item[0] in message.text.lower():
+                return True
+        return False

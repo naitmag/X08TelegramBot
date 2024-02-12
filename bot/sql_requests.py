@@ -1,8 +1,9 @@
 import sqlite3 as sq
+from pathlib import Path
 
 
 def create_user(telegram_id: int, name: str, lastname: str, username: str):
-    with sq.connect('data/users.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/users.db") as con:
         cur = con.cursor()
         cur.execute(f"""INSERT OR IGNORE INTO users (name, lastname, username, telegram_id)
                 SELECT '{name}', '{lastname}', '{username}', {telegram_id}
@@ -12,7 +13,7 @@ def create_user(telegram_id: int, name: str, lastname: str, username: str):
 
 
 def update_user_level(request, level):
-    with sq.connect('data/users.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/users.db") as con:
         cur = con.cursor()
         data = cur.execute(
             f"""UPDATE users SET level = {level} WHERE username = '{request}' OR telegram_id = '{request}';""")
@@ -20,7 +21,7 @@ def update_user_level(request, level):
 
 
 def get_user(request: str or int) -> list:
-    with sq.connect('data/users.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/users.db") as con:
         cur = con.cursor()
         data = cur.execute(f"""SELECT * FROM users WHERE username = '{request}' OR telegram_id = '{request}'""")
     data = data.fetchall()
@@ -29,13 +30,13 @@ def get_user(request: str or int) -> list:
 
 
 def drop_database():
-    with sq.connect('data/lessons.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/lessons.db") as con:
         cur = con.cursor()
         cur.execute("""DELETE FROM lessons""")
 
 
 def read_txt():
-    with open('data/lessons.txt', encoding='utf-8') as file:
+    with open(f"{Path(__file__).parent.resolve()}/data/lessons.txt", encoding='utf-8') as file:
         file = file.read()
 
         days = file.split('\n\n\n')
@@ -59,7 +60,7 @@ def read_txt():
 
 
 def get_schedule(week: int = None, day_of_the_week: int = None) -> list:
-    with sq.connect('data/lessons.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/lessons.db") as con:
         cur = con.cursor()
 
         if day_of_the_week is None:
@@ -80,7 +81,7 @@ def get_schedule(week: int = None, day_of_the_week: int = None) -> list:
 
 
 def get_teacher(request) -> list:
-    with sq.connect('data/lessons.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/lessons.db") as con:
         cur = con.cursor()
 
         data = cur.execute(
@@ -94,7 +95,7 @@ def create_lesson(interval: str, day_of_the_week: int, lesson_number: int, name:
     start = interval[0]
     end = interval[0] if len(interval) <= 1 else interval[1]
 
-    with sq.connect('data/lessons.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/lessons.db") as con:
         cur = con.cursor()
 
         cur.execute(
@@ -112,7 +113,7 @@ def create_lesson(interval: str, day_of_the_week: int, lesson_number: int, name:
 
 
 def delete_lesson(day_of_the_week: int, lesson_number: int, name: str):
-    with sq.connect('data/lessons.db') as con:
+    with sq.connect(f"{Path(__file__).parent.resolve()}/data/lessons.db") as con:
         cur = con.cursor()
         data = cur.execute(
             f"""SELECT * FROM lessons WHERE 

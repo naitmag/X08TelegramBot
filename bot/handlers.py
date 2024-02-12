@@ -1,18 +1,19 @@
 import time
 from pathlib import Path
+import random
 
 import telebot.apihelper
 from telebot import types
 
 import config
-from config import cabinets_info, bot, ADMIN_ID, pages, days, define_time, GROUP_ID, roles
+from config import cabinets_info, bot, ADMIN_ID, pages, days, define_time, GROUP_ID, roles, events
 from sql_requests import get_teacher, create_lesson, update_user_level, delete_lesson, get_user
-from utils import send_weather, detect_user, random_element, format_schedule, format_teacher
+from utils import send_weather, detect_user, random_element, format_schedule, format_teacher, detect_chat
 
 
 def start_greetings(message: types.Message):
     print(f"[=]{detect_user(message)} started the bot")
-    photo = open(f"{Path(__file__).parent.resolve()}\\data\\start.jpg", 'rb')
+    photo = open(f"{Path(__file__).parent.resolve()}/data/start.jpg", 'rb')
 
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("Команды", callback_data="help")
@@ -53,7 +54,7 @@ def set_permission(message: types.Message):
                      f"теперь <b>{roles[request[1]]}</b>",
                      parse_mode='html')
     update_user_level(request[0], request[1])
-    print(f"[A]{detect_user(message)} set {request[0]} level to {request[1]}")
+    print(f"[A]({detect_chat(message)}){detect_user(message)} set {request[0]} level to {request[1]}")
     bot.delete_message(message.chat.id, message.message_id)
 
 
@@ -71,15 +72,14 @@ def show_permission(message: types.Message):
     bot.delete_message(message.chat.id, message.message_id)
 
 
-# ready
 def manage_cabs(message: types.Message):
     args = message.text.split()[1:5]
-    print(f"[?]{detect_user(message)} requested cabinets: {args}")
+    print(f"[?]({detect_chat(message)}){detect_user(message)} requested cabinets: {args}")
     cabs = [i for i in args if len(i) > 2 and i[:3].isdigit() and not i[3:].isdigit()]
     if cabs == args:
         if len(args) > 0:
             cabinets_info['cabinets'] = args
-            cabinets_info['author'][message.message_id] = detect_user(message)
+            cabinets_info['author'] = detect_user(message)
 
         if cabinets_info["cabinets"]:
 
@@ -93,21 +93,19 @@ def manage_cabs(message: types.Message):
             bot.send_message(message.chat.id, "<b>Кабинеты не добавлены</b>", parse_mode="html")
 
 
-# ready
 def show_author(callback: types.CallbackQuery):
     bot.answer_callback_query(callback.id,
-                              f"Прислал: {cabinets_info['author'].get(callback.message.message_id - 1, 'неизвестно')}",
+                              f"Прислал: {cabinets_info['author']}",
                               show_alert=True)
 
 
-# ready to use
 def send_schedule(message: types.Message = None):
     if not message:
         bot.send_message(GROUP_ID, format_schedule(), parse_mode='html')
         return
 
     args = message.text.split()[1:3]
-    print(f"[?]{detect_user(message)} requested schedule: {args}")
+    print(f"[?]({detect_chat(message)}){detect_user(message)} requested schedule: {args}")
 
     args.extend([''] * (2 - len(args)))
     week = list(filter(lambda x: x.isdigit(), args))
@@ -127,7 +125,7 @@ def send_schedule(message: types.Message = None):
 
 def add_lesson(message: types.Message):
     args = message.text.split()[1:]
-    print(f"[R]{detect_user(message)} adds lessons {args}")
+    print(f"[R]({detect_chat(message)}){detect_user(message)} adds lessons {args}")
     try:
 
         interval = args[0].split('-')
@@ -147,7 +145,7 @@ def add_lesson(message: types.Message):
             return
 
     except (IndexError, ValueError):
-        print(f"[!]{detect_user(message)} WRONG ARGUMENTS: {args}")
+        print(f"[!]({detect_chat(message)}){detect_user(message)} WRONG ARGUMENTS: {args}")
 
         bot.send_message(message.chat.id,
                          "<b>❌ Неверная команда!</b>\n"
@@ -165,14 +163,14 @@ def add_lesson(message: types.Message):
 
 def remove_lesson(message: types.Message):
     args = message.text.split()[1:]
-    print(f"[R]{detect_user(message)} removes lessons {args}")
+    print(f"[R]({detect_chat(message)}){detect_user(message)} removes lessons {args}")
     try:
         args[0] = days.get(args[0])
         args[1] = int(args[1]) - 1
         args[2] = args[2].replace('_', ' ')
 
     except (IndexError, ValueError):
-        print(f"[!]{detect_user(message)} WRONG ARGUMENTS: {args}")
+        print(f"[!]({detect_chat(message)}){detect_user(message)} WRONG ARGUMENTS: {args}")
 
         bot.send_message(message.chat.id,
                          "<b>❌ Неверная команда!</b>\n"
@@ -195,7 +193,7 @@ def remove_lesson(message: types.Message):
 
 def send_teacher(message: types.Message):
     args = message.text.lower().split()[1:]
-    print(f"[?]{detect_user(message)} teachers request: {args}")
+    print(f"[?]({detect_chat(message)}){detect_user(message)} teachers request: {args}")
     if args and len(args[0]) >= 3:
         result = (f"🔍 Занятия по запросу '<u>{args[0]}</u>' :\n"
                   f"{format_teacher(get_teacher(args[0]))}")
@@ -207,15 +205,14 @@ def send_teacher(message: types.Message):
 
 
 def weather_request(message: types.Message):
-    print(f"[?]{detect_user(message)} requested weather")
+    print(f"[?]({detect_chat(message)}){detect_user(message)} requested weather")
     send_weather(message.chat.id)
     # bot.delete_message(message.chat.id, message.message_id)
 
 
-# old
 def random_request(message: types.Message):
     args = message.text.split()[1:]
-    print(f"[?]{detect_user(message)} randomize {args}")
+    print(f"[?]({detect_chat(message)}){detect_user(message)} randomize {args}")
     if args and len(args) >= 2:
         bot.send_dice(message.chat.id)
         time.sleep(4)
@@ -243,6 +240,20 @@ def wrong_chat_type(message: types.Message):
                      f"Используйте данную команду в "
                      f"{'группе' if message.chat.type == 'private' else 'личном сообщении'}.",
                      reply_markup=markup, disable_web_page_preview=True)
+
+
+def check_text_event(message: types.Message):
+    current_chance = random.randint(0, 101)
+    check_list = list(events['text'].items())
+    for item in check_list:
+        if item[0] in message.text.lower():
+            if current_chance <= item[1][0]:
+                bot.reply_to(message, item[1][1])
+
+
+def check_photo_event(message: types.Message):
+    if random.randint(0, 101) <= events['photo'][0]:
+        bot.reply_to(message, events['photo'][1][random.randint(0, len(events['photo'][1]) - 1)])
 
 
 def home_page(callback: types.CallbackQuery):
@@ -283,7 +294,7 @@ def scroll_schedule(callback: types.CallbackQuery):
     week = int(callback.message.text.split()[4])
     week = week - (-1 if callback.data == 'next' else 1)
     week = (week - 1 if week == 0 else week) % 21
-    print(f"[>]{detect_user(callback)} scrolls schedule")
+    print(f"[>]({detect_chat(callback.message)}){detect_user(callback)} scrolls schedule")
     result = format_schedule(week)
 
     if result != callback.message.text:
@@ -291,7 +302,8 @@ def scroll_schedule(callback: types.CallbackQuery):
             bot.edit_message_text(result, callback.message.chat.id, callback.message.message_id,
                                   parse_mode="html", reply_markup=callback.message.reply_markup)
         except telebot.apihelper.ApiTelegramException:
-            print(f"[!]{detect_user(callback)} TO MANY CALLBACK REQUESTS")
+
+            print(f"[!]{detect_chat(callback.message)}{detect_user(callback)} TO MANY CALLBACK REQUESTS")
 
 
 def delete_button(callback: types.CallbackQuery):

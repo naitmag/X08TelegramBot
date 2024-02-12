@@ -14,7 +14,7 @@ API_WEATHER = env.str('API_WEATHER')
 CITY = env.str('CITY')
 WEATHER_TIME = env.str('WEATHER_TIME')
 SCHEDULE_TIME = env.str('SCHEDULE_TIME')
-CABINETS_CLEAR_TIME = env.str('CABINETS_CLEAR_TIME')
+
 
 START_LESSONS = datetime(2024, 2, 12)
 
@@ -24,7 +24,7 @@ admin_mode = False
 bot = telebot.TeleBot(TOKEN, use_class_middlewares=True)
 apihelper.ENABLE_MIDDLEWARE = True
 
-cabinets_info = {"cabinets": [], "author": {}}
+cabinets_info = {"cabinets": [], "author": 'неизвестно'}
 
 days = {
     0: "пн",
@@ -164,4 +164,20 @@ roles = {
     3: "Редактор 📝",
     4: "Староста 👨‍🏫",
     5: "Администратор 🔐"
+}
+
+events = {
+    'text':
+        {
+            "понедельник": (35, "Опять понедельник😫"),
+            "суббота": (35, "В субботу спать надо😴"),
+            "блять": (40, "Маты это плохо😳"),
+            "орлова": (50, "Катя топ😇"),
+            "🤡": (50, "🤡"),
+            "с днём": (50, "Поздравляем!🎉")
+
+        },
+    'photo':
+        (5, ["Красивое😍", "Очень красиво☺️", "Прекрасное фото🤤"])
+
 }
