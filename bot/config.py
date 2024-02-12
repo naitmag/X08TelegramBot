@@ -19,7 +19,8 @@ SCHEDULE_TIME = env.str('SCHEDULE_TIME')
 START_LESSONS = datetime(2024, 2, 12)
 
 ADMIN_ID = env.int('ADMIN_ID')
-admin_mode = False
+
+ADMIN_mode = False
 
 bot = telebot.TeleBot(TOKEN, use_class_middlewares=True)
 apihelper.ENABLE_MIDDLEWARE = True

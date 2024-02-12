@@ -36,7 +36,7 @@ def detect_chat(data: types.Message) -> str:
 
 
 def check_permissions(message: types.Message, requirement_level: int) -> bool:
-    if config.admin_mode and message.from_user.id == ADMIN_ID:
+    if config.ADMIN_mode and message.from_user.id == ADMIN_ID:
         return True
 
     userdata = get_user(message.from_user.id)
