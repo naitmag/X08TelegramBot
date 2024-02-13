@@ -8,3 +8,4 @@ pycache/
 venv/
 tests/
 bot/data/users.db
+bot/data/lessons.db
