@@ -1,30 +1,24 @@
 import json
 import random
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import requests
 from pytz import timezone
 from telebot import types
 
 import config
-from config import bot, GROUP_ID, CITY, API_WEATHER, START_LESSONS, define_week, define_time, ADMIN_ID
+from config import bot, CITY, API_WEATHER, START_LESSONS, define_week, define_time, ADMIN_ID
 from sql_requests import get_schedule, drop_database, read_txt, get_user
 
 
-def send_weather(target: int = None):
+def get_weather() -> str:
     res = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_WEATHER}&units=metric')
     data = json.loads(res.text)
-    bot_reply = (f"<b>⛅️Погода {datetime.now(tz=timezone('Europe/Minsk')).strftime('%H:%M')}</b>\n"
-                 f"\n🌡 Температура: <b>{round(data['main']['temp'])}°C</b>"
-                 f"\n🧍 Ощущается как <b>{round(data['main']['feels_like'])}</b>°C"
-                 f"\n💧 Влажность: <b>{data['main']['humidity']}%</b>")
-    picture_number = random.randint(0, 1)
-    path = f"{Path(__file__).parent.resolve()}/data/img/{data['weather'][0]['main']}/{picture_number}.jpg"
-
-    file = open(path, 'rb')
-    bot.send_photo(target if target is not None else GROUP_ID, file, bot_reply, parse_mode="html")
-    file.close()
+    result = (f"<b>⛅️Погода {datetime.now(tz=timezone('Europe/Minsk')).strftime('%H:%M')}</b>\n"
+              f"\n🌡 Температура: <b>{round(data['main']['temp'])}°C</b>"
+              f"\n🧍 Ощущается как <b>{round(data['main']['feels_like'])}</b>°C"
+              f"\n💧 Влажность: <b>{data['main']['humidity']}%</b>")
+    return result
 
 
 def detect_user(data: types.Message | types.CallbackQuery) -> str:
@@ -35,7 +29,7 @@ def detect_chat(data: types.Message) -> str:
     return data.chat.title[:15] if data.chat.title else "Private"
 
 
-def check_permissions(message: types.Message, requirement_level: int) -> bool:
+def check_permissions(message: types.Message, requirement_level: int, hiden_mode=False) -> bool:
     if config.admin_mode and message.from_user.id == ADMIN_ID:
         return True
 
@@ -44,7 +38,8 @@ def check_permissions(message: types.Message, requirement_level: int) -> bool:
     access = userdata[5] >= requirement_level
 
     if not access and type(message) is types.Message:
-        bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
+        if not hiden_mode:
+            bot.reply_to(message, "❌<b>У вас нет прав.</b>\n<em>Подробнее: /roles</em>", parse_mode='html')
 
     return access
 
@@ -92,7 +87,10 @@ def format_teacher(data) -> str:
         if item not in result_list:
             result_list.append(item)
     result_list.sort()
-    result = "\n".join(result_list)
+    if result_list:
+        result = "\n".join(result_list)
+    else:
+        result = "<b> - Нет результатов. </b>"
 
     return result
 

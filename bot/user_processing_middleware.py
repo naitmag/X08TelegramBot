@@ -30,7 +30,7 @@ class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
 
     @staticmethod
     def check(message: types.Message):
-        result = check_permissions(message, 5)
+        result = check_permissions(message, 5, True)
         if not result:
             print(f"[-]({detect_chat(message)}){detect_user(message)} don't have permissons 5: {message.text}")
         return result

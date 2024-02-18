@@ -1,14 +1,29 @@
 import time
+from datetime import datetime
 from pathlib import Path
 import random
 
 import telebot.apihelper
 from telebot import types
+from telebot.handler_backends import StatesGroup, State
 
 import config
 from config import cabinets_info, bot, ADMIN_ID, pages, days, define_time, GROUP_ID, roles, events
-from sql_requests import get_teacher, create_lesson, update_user_level, delete_lesson, get_user
-from utils import send_weather, detect_user, random_element, format_schedule, format_teacher, detect_chat
+from sql_requests import get_teacher, update_user_level, delete_lesson, get_user
+from utils import detect_user, random_element, format_schedule, format_teacher, detect_chat, get_weather
+
+
+class TeachersRequestState(StatesGroup):
+    request = State()
+
+
+class AddLessonsRequestState(StatesGroup):
+    get_week = State()
+    get_day_of_the_week = State()
+    get_lesson_number = State()
+    get_lesson_name = State()
+    get_lesson_type = State()
+    get_teacher = State()
 
 
 def start_greetings(message: types.Message):
@@ -31,6 +46,7 @@ def switch_admin_mode(message: types.Message):
     if message.from_user.id == ADMIN_ID:
         config.admin_mode = not config.admin_mode
         bot.send_message(message.chat.id, f"🔐 Режим админа теперь: {config.admin_mode}")
+        bot.delete_message(message.chat.id, message.message_id)
     else:
         bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
 
@@ -123,42 +139,114 @@ def send_schedule(message: types.Message = None):
                      reply_markup=markup)
 
 
-def add_lesson(message: types.Message):
-    args = message.text.split()[1:]
-    print(f"[R]({detect_chat(message)}){detect_user(message)} adds lessons {args}")
-    try:
+def add_lessons(message: types.Message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Текущая", callback_data="current_week"))
+    markup.add(types.InlineKeyboardButton("Следующая", callback_data="next_week"))
+    markup.add(types.InlineKeyboardButton("Отмена", callback_data="cancel_request"))
+    bot.set_state(message.from_user.id, AddLessonsRequestState.get_week, message.chat.id)
 
-        interval = args[0].split('-')
-        start = int(interval[0])
-        end = int(interval[0] if len(interval) <= 1 else interval[1])
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['steps'] = "<b>➕ Добавить занятие</b>\n"
+        sended_message = bot.send_message(message.chat.id, data['steps'] + "- Введите неделю:", parse_mode='html',
+                                          reply_markup=markup)
+        data['message_id'] = sended_message.message_id
 
-        if 0 <= start <= 20 and start <= end <= 20:
 
-            args[1] = days.get(args[1])
-            args[2] = int(args[2]) - 1
-            args[3] = args[3].capitalize().replace('_', ' ')
-
-            if len(args) > 5:
-                args[5] = args[5].capitalize()
-        else:
-            bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
-            return
-
-    except (IndexError, ValueError):
-        print(f"[!]({detect_chat(message)}){detect_user(message)} WRONG ARGUMENTS: {args}")
-
-        bot.send_message(message.chat.id,
-                         "<b>❌ Неверная команда!</b>\n"
-                         "<i>Используйте</i> <code>/add 1-10 пн 1 "
-                         "Название_пары сем. Фамилия</code>\n"
-                         "Подробнее: /help", parse_mode="html")
+def input_week(querry: types.Message | types.CallbackQuery):
+    if type(querry) is types.CallbackQuery:
+        week = max((datetime.now() - config.START_LESSONS).days // 7 + 1 + (1 if querry.data == "next_week" else 0), 1)
+        chat_id = querry.message.chat.id
     else:
-        create_lesson(*args[:6])
-        bot.send_message(message.chat.id,
-                         f"ℹ️ <b>{detect_user(message)}</b> добавил(-а):\n"
-                         f" - <b><em> {args[4] if len(args) > 4 else 'доп.'} {args[3]}</em></b>"
-                         f" в <b>{days.get(args[1])} {define_time[args[2]]}</b> на <b>{args[0]}</b> неделю(-и)",
-                         parse_mode="html")
+        week = querry.text
+        chat_id = querry.chat.id
+        bot.delete_message(chat_id,querry.message_id)
+
+    with bot.retrieve_data(querry.from_user.id, chat_id) as data:
+        data['week'] = week
+        data['steps'] += f"📆 <b>{data['week']}</b> неделя(-и)\n"
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            *(
+                types.InlineKeyboardButton("Понедельник", callback_data='0'),
+                types.InlineKeyboardButton("Вторник", callback_data='1'),
+                types.InlineKeyboardButton("Среда", callback_data='2'),
+                types.InlineKeyboardButton("Четверг", callback_data='3'),
+                types.InlineKeyboardButton("Пятница", callback_data='4'),
+                types.InlineKeyboardButton("Суббота", callback_data='5')
+            )
+        )
+
+        markup.add(types.InlineKeyboardButton("Отмена", callback_data="cancel_request"))
+
+        bot.edit_message_text(data['steps'] + "Выберите день недели:", chat_id, data['message_id'],
+                              parse_mode='html', reply_markup=markup)
+
+        bot.set_state(querry.from_user.id, AddLessonsRequestState.get_day_of_the_week, chat_id)
+
+
+
+def input_day_of_the_week(callback: types.CallbackQuery):
+
+    with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
+        data['day_of_the_week'] = int(callback.data)
+        data['steps'] += f"☀️ <b>{config.define_week[data['day_of_the_week']][2:]}</b>\n"
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            *(
+                types.InlineKeyboardButton("Лекция", callback_data='0'),
+                types.InlineKeyboardButton("Семинар", callback_data='1'),
+                types.InlineKeyboardButton("Практическая", callback_data='2'),
+                types.InlineKeyboardButton("Лабораторная", callback_data='3'),
+                types.InlineKeyboardButton("Дополнительный", callback_data='4'),
+                types.InlineKeyboardButton("Отмена", callback_data="cancel_request")
+            )
+        )
+
+
+        bot.edit_message_text(data['steps'] + "Выберите тип занитя:", callback.message.chat.id, data['message_id'],
+                              parse_mode='html', reply_markup=markup)
+
+        bot.set_state(callback.from_user.id, AddLessonsRequestState.get_lesson_name, callback.message.chat.id)
+
+
+# args = message.text.split()[1:]
+# print(f"[R]({detect_chat(message)}){detect_user(message)} adds lessons {args}")
+# try:
+#
+#     interval = args[0].split('-')
+#     start = int(interval[0])
+#     end = int(interval[0] if len(interval) <= 1 else interval[1])
+#
+#     if 0 <= start <= 20 and start <= end <= 20:
+#
+#         args[1] = days.get(args[1])
+#         args[2] = int(args[2]) - 1
+#         args[3] = args[3].capitalize().replace('_', ' ')
+#
+#         if len(args) > 5:
+#             args[5] = args[5].capitalize()
+#     else:
+#         bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
+#         return
+#
+# except (IndexError, ValueError):
+#     print(f"[!]({detect_chat(message)}){detect_user(message)} WRONG ARGUMENTS: {args}")
+#
+#     bot.send_message(message.chat.id,
+#                      "<b>❌ Неверная команда!</b>\n"
+#                      "<i>Используйте</i> <code>/add 1-10 пн 1 "
+#                      "Название_пары сем. Фамилия</code>\n"
+#                      "Подробнее: /help", parse_mode="html")
+# else:
+#     create_lesson(*args[:6])
+#     bot.send_message(message.chat.id,
+#                      f"ℹ️ <b>{detect_user(message)}</b> добавил(-а):\n"
+#                      f" - <b><em> {args[4] if len(args) > 4 else 'доп.'} {args[3]}</em></b>"
+#                      f" в <b>{days.get(args[1])} {define_time[args[2]]}</b> на <b>{args[0]}</b> неделю(-и)",
+#                      parse_mode="html")
 
 
 def remove_lesson(message: types.Message):
@@ -191,23 +279,56 @@ def remove_lesson(message: types.Message):
                              parse_mode='html')
 
 
+def input_teachers(message: types.Message):
+    bot.set_state(message.from_user.id, TeachersRequestState.request, message.chat.id)
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Отмена", callback_data="cancel_request"))
+    sended_message = bot.send_message(message.chat.id,
+                                      "🔍 <b>Введите <em>название предмета</em> или <em>фамилию</em>.</b>",
+                                      parse_mode='html', reply_markup=markup)
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['message_id'] = sended_message.message_id
+
+
 def send_teacher(message: types.Message):
-    args = message.text.lower().split()[1:]
-    print(f"[?]({detect_chat(message)}){detect_user(message)} teachers request: {args}")
-    if args and len(args[0]) >= 3:
-        result = (f"🔍 Занятия по запросу '<u>{args[0]}</u>' :\n"
-                  f"{format_teacher(get_teacher(args[0]))}")
-        bot.send_message(message.chat.id, result, parse_mode="html")
-    else:
-        bot.send_message(message.chat.id, f"🔍 <b>Введите название предмета или фамилию</b>\n"
-                                          f"<code>/teacher иванов</code>", parse_mode='html')
-    # bot.delete_message(message.chat.id, message.message_id)
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        result = (f"🔍 Занятия по запросу '<u>{message.text}</u>' :\n"
+                  f"{format_teacher(get_teacher(message.text))}")
+
+        bot.edit_message_text(result, message.chat.id, data['message_id'],
+                              parse_mode='html')
+    bot.delete_state(message.from_user.id, message.chat.id)
+    bot.delete_message(message.chat.id, message.message_id)
 
 
-def weather_request(message: types.Message):
+def cancel_request(callback: types.CallbackQuery):
+    with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
+        bot.edit_message_text("🔍 <b>Запрос был отменен.</b>", callback.message.chat.id, data['message_id'],
+                              parse_mode='html')
+    bot.delete_state(callback.from_user.id, callback.message.chat.id)
+
+
+def send_weather(message: types.Message = None):
     print(f"[?]({detect_chat(message)}){detect_user(message)} requested weather")
-    send_weather(message.chat.id)
-    # bot.delete_message(message.chat.id, message.message_id)
+    picture_number = random.randint(0, 1)
+    path = f"{Path(__file__).parent.resolve()}/data/img/Clouds/{picture_number}.jpg"
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Обновить", callback_data="update_weather"))
+    file = open(path, 'rb')
+    bot.send_photo(message.chat.id if message is not None else GROUP_ID, file, get_weather(), parse_mode="html",
+                   reply_markup=markup)
+    file.close()
+
+
+def update_weather(callback: types.CallbackQuery):
+    result = get_weather()
+    try:
+        bot.edit_message_caption(result, callback.message.chat.id, callback.message.message_id, parse_mode='html',
+                                 reply_markup=callback.message.reply_markup)
+    except telebot.apihelper.ApiTelegramException:
+        bot.set_message_reaction(callback.message.chat.id, callback.message.message_id, [types.ReactionTypeEmoji("⚡️")])
 
 
 def random_request(message: types.Message):
@@ -224,7 +345,6 @@ def random_request(message: types.Message):
     else:
         bot.send_message(message.chat.id, "<b>🎲 Введите список элементов</b>\n"
                                           "<code>/random элемент1 элемент2</code>", parse_mode='html')
-    # bot.delete_message(message.chat.id, message.message_id)
 
 
 def send_id(message: types.Message):
@@ -249,6 +369,7 @@ def check_text_event(message: types.Message):
         if item[0] in message.text.lower():
             if current_chance <= item[1][0]:
                 bot.reply_to(message, item[1][1])
+                return
 
 
 def check_photo_event(message: types.Message):
@@ -271,6 +392,12 @@ def pages_button(callback: types.CallbackQuery):
     markup.add(types.InlineKeyboardButton("Назад", callback_data="home"))
     bot.edit_message_text(pages[callback.data], callback.message.chat.id, callback.message.message_id,
                           parse_mode="html", disable_web_page_preview=True, reply_markup=markup)
+
+
+def send_roles(message: types.Message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Скрыть", callback_data='hide'))
+    bot.send_message(message.chat.id, pages['roles'], parse_mode='html', reply_markup=markup)
 
 
 def send_guide(message: types.Message):

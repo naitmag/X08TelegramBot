@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import telebot
-from telebot import apihelper
+from telebot import apihelper, StateMemoryStorage
 
 from environs import Env
 
@@ -20,9 +20,11 @@ START_LESSONS = datetime(2024, 2, 12)
 
 ADMIN_ID = env.int('ADMIN_ID')
 
-admin_mode = False
+admin_mode = True
 
-bot = telebot.TeleBot(TOKEN, use_class_middlewares=True)
+state_storage = StateMemoryStorage()
+
+bot = telebot.TeleBot(TOKEN, use_class_middlewares=True, state_storage=state_storage)
 apihelper.ENABLE_MIDDLEWARE = True
 
 cabinets_info = {"cabinets": [], "author": 'неизвестно'}
@@ -150,7 +152,6 @@ pages = {
         f"\n- <i>В разработке..</i>"
         f"\n\n<blockquote><b>Одногруппник 👨‍🎓</b></blockquote>"
         f"\n- Позволяет запрашивать расписание"
-        f"\n- Может добавлять или удалять кабинеты"
         f"\n\n<blockquote><b>Пользователь 👤</b></blockquote>"
         f"\n- Обычный пользователь"
         f"\n\n<blockquote><b>Заблокирован 🚫</b></blockquote>"
