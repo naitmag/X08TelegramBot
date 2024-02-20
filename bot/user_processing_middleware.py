@@ -29,11 +29,15 @@ class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
     key = 'is_admin'
 
     @staticmethod
-    def check(message: types.Message):
-        result = check_permissions(message, 5, True)
-        if not result:
-            print(f"[-]({detect_chat(message)}){detect_user(message)} don't have permissons 5: {message.text}")
-        return result
+    def check(request: types.Message | types.CallbackQuery):
+        access = check_permissions(request, 5)
+        if not access:
+            if type(request) is types.Message:
+                action = request.text
+            else:
+                action = request.data
+            print(f"[-]{detect_chat(request)}{detect_user(request)} don't have permissons 3: {action}")
+        return access
 
 
 class IsHeadman(telebot.custom_filters.SimpleCustomFilter):
@@ -41,11 +45,15 @@ class IsHeadman(telebot.custom_filters.SimpleCustomFilter):
     key = 'is_headman'
 
     @staticmethod
-    def check(message: types.Message):
-        result = check_permissions(message, 4)
-        if not result:
-            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 4: {message.text}")
-        return result
+    def check(request: types.Message | types.CallbackQuery):
+        access = check_permissions(request, 4)
+        if not access:
+            if type(request) is types.Message:
+                action = request.text
+            else:
+                action = request.data
+            print(f"[-]{detect_chat(request)}{detect_user(request)} don't have permissons 3: {action}")
+        return access
 
 
 class IsEditor(telebot.custom_filters.SimpleCustomFilter):
@@ -53,11 +61,15 @@ class IsEditor(telebot.custom_filters.SimpleCustomFilter):
     key = 'is_editor'
 
     @staticmethod
-    def check(message: types.Message):
-        result = check_permissions(message, 3)
-        if not result:
-            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 3: {message.text}")
-        return result
+    def check(request: types.Message | types.CallbackQuery):
+        access = check_permissions(request, 3)
+        if not access:
+            if type(request) is types.Message:
+                action = request.text
+            else:
+                action = request.data
+            print(f"[-]{detect_chat(request)}{detect_user(request)} don't have permissons 3: {action}")
+        return access
 
 
 class IsClassmate(telebot.custom_filters.SimpleCustomFilter):
@@ -65,11 +77,15 @@ class IsClassmate(telebot.custom_filters.SimpleCustomFilter):
     key = 'is_classmate'
 
     @staticmethod
-    def check(message: types.Message):
-        result = check_permissions(message, 1)
-        if not result:
-            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 1: {message.text}")
-        return result
+    def check(request: types.Message | types.CallbackQuery):
+        access = check_permissions(request, 1)
+        if not access:
+            if type(request) is types.Message:
+                action = request.text
+            else:
+                action = request.data
+            print(f"[-]{detect_chat(request)}{detect_user(request)} don't have permissons 3: {action}")
+        return access
 
 
 class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
@@ -77,11 +93,15 @@ class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
     key = 'is_allowed'
 
     @staticmethod
-    def check(message: types.Message):
-        result = check_permissions(message, 0)
-        if not result:
-            print(f"[-]{detect_chat(message)}{detect_user(message)} don't have permissons 0: {message.text}")
-        return result
+    def check(request: types.Message | types.CallbackQuery):
+        access = check_permissions(request, 0)
+        if not access:
+            if type(request) is types.Message:
+                action = request.text
+            else:
+                action = request.data
+            print(f"[-]{detect_chat(request)}{detect_user(request)} don't have permissons 3: {action}")
+        return access
 
 
 class ContainsEventWord(telebot.custom_filters.SimpleCustomFilter):

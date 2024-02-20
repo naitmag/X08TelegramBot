@@ -8,5 +8,5 @@ pycache/
 venv/
 tests/
 bot/__pycache__
-bot/data/users.db
-bot/data/lessons.db
+bot/data/databases/users.db
+bot/data/databases/lessons.db

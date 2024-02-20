@@ -25,21 +25,27 @@ def detect_user(data: types.Message | types.CallbackQuery) -> str:
     return f"@{data.from_user.username}" if data.from_user.username else data.from_user.first_name
 
 
-def detect_chat(data: types.Message) -> str:
+def detect_chat(data: types.Message | types.CallbackQuery) -> str:
+    if type(data) is types.CallbackQuery:
+        data = data.message
+
     return data.chat.title[:15] if data.chat.title else "Private"
 
 
-def check_permissions(message: types.Message, requirement_level: int, hiden_mode=False) -> bool:
-    if config.admin_mode and message.from_user.id == ADMIN_ID:
+def check_permissions(querry: types.Message | types.CallbackQuery, requirement_level: int, hiden_mode=False) -> bool:
+    if config.admin_mode and querry.from_user.id == ADMIN_ID:
         return True
 
-    userdata = get_user(message.from_user.id)
+    userdata = get_user(querry.from_user.id)
 
     access = userdata[5] >= requirement_level
 
-    if not access and type(message) is types.Message:
+    if not access:
         if not hiden_mode:
-            bot.reply_to(message, "❌<b>У вас нет прав.</b>\n<em>Подробнее: /roles</em>", parse_mode='html')
+            if type(querry) is types.Message:
+                bot.reply_to(querry, "❌<b>У вас нет прав.</b>\n<em>Подробнее: /roles</em>", parse_mode='html')
+            else:
+                bot.answer_callback_query(querry.id, "❌У вас нет прав.\nПодробнее: /roles", show_alert=True)
 
     return access
 
