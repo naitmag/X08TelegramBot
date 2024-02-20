@@ -8,8 +8,9 @@ from handlers import manage_cabs, show_author, send_weather, \
     random_request, send_id, wrong_chat_type, start_greetings, \
     send_guide, pages_button, home_page, send_schedule, send_teacher, add_lessons, scroll_schedule, \
     set_permission, remove_lesson, admin_guide, show_permission, delete_button, switch_admin_mode, check_text_event, \
-    check_photo_event, send_roles, TeachersRequestState, input_teachers, cancel_request, \
-    input_week, AddLessonsRequestState, update_weather, input_day_of_the_week
+    check_photo_event, send_roles, TeachersRequestState, find_teachers, cancel_request, \
+    input_week, AddLessonsRequestState, update_weather, input_day_of_the_week, input_lesson_number, input_lesson_type, \
+    input_lesson_name, confirm_lesson, input_lesson_teacher
 from user_processing_middleware import Middleware, IsAllowed, IsAdmin, IsEditor, IsHeadman, IsClassmate, \
     ContainsEventWord
 
@@ -22,7 +23,7 @@ def main():
     other_action_thread = threading.Thread(target=bot_background)
     other_action_thread.start()
 
-    bot.setup_middleware(Middleware())
+    #bot.setup_middleware(Middleware())
 
     bot.add_custom_filter(IsAdmin())
     bot.add_custom_filter(IsHeadman())
@@ -42,6 +43,14 @@ def main():
                                         func=lambda callback: callback.data in ['current_week', 'next_week'])
     bot.register_callback_query_handler(input_day_of_the_week, state=AddLessonsRequestState.get_day_of_the_week,
                                         func=lambda callback: True)
+    bot.register_callback_query_handler(input_lesson_number, state=AddLessonsRequestState.get_lesson_number,
+                                        func=lambda callback: True)
+    bot.register_callback_query_handler(input_lesson_type, state=AddLessonsRequestState.get_lesson_type,
+                                        func=lambda callback: True)
+    bot.register_message_handler(input_lesson_name, state=AddLessonsRequestState.get_lesson_name)
+    bot.register_message_handler(input_lesson_teacher, state=AddLessonsRequestState.get_teacher)
+    bot.register_callback_query_handler(confirm_lesson, state=AddLessonsRequestState.confirm_input,
+                                        func=lambda callback: True)
 
     bot.register_message_handler(start_greetings, commands=['start'], chat_types=['private'])
     bot.register_message_handler(random_request, commands=['random', 'r'], chat_types=['private'], is_allowed=True)
@@ -53,7 +62,7 @@ def main():
     bot.register_message_handler(set_permission, commands=['set'], is_admin=True)
     bot.register_message_handler(show_permission, commands=['perm'], is_admin=True)
 
-    bot.register_message_handler(input_teachers, commands=['teacher', 't'])
+    bot.register_message_handler(find_teachers, commands=['teacher', 't'])
 
     bot.register_message_handler(send_weather, commands=['weather', 'w'], is_classmate=True)
     bot.register_message_handler(manage_cabs, commands=['cabinets', 'c'], is_classmate=True)

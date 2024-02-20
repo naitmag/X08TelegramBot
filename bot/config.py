@@ -24,8 +24,8 @@ admin_mode = True
 
 state_storage = StateMemoryStorage()
 
-bot = telebot.TeleBot(TOKEN, use_class_middlewares=True, state_storage=state_storage)
-apihelper.ENABLE_MIDDLEWARE = True
+bot = telebot.TeleBot(TOKEN, use_class_middlewares=False, state_storage=state_storage)
+apihelper.ENABLE_MIDDLEWARE = False
 
 cabinets_info = {"cabinets": [], "author": 'неизвестно'}
 
@@ -58,7 +58,17 @@ define_time = {
     1: "9:35",
     2: "11:10",
     3: "13:00",
-    4: "14:20"
+    4: "14:35",
+    5: "16.10"
+}
+
+define_lesson_type = {
+    0: "л.",
+    1: "сем.",
+    2: "пр.",
+    3: "лаб.",
+    4: "спорт.",
+    6: "кардио",
 }
 
 pages = {
