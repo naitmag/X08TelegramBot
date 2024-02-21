@@ -100,6 +100,7 @@ def manage_cabs(message: types.Message):
         if len(args) > 0:
             cabinets_info['cabinets'] = args
             cabinets_info['author'] = detect_user(message)
+            bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("❤️‍🔥")])
 
         if cabinets_info["cabinets"]:
 
