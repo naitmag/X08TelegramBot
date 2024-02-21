@@ -56,7 +56,7 @@ def random_element(args: list) -> str:
 
 def format_schedule(week: int = None, day_of_the_week: int = None) -> str:
     if not week:
-        week = max(((datetime.now() - START_LESSONS).days + 1) // 7 + 1, 1)
+        week = get_current_week()
 
     schedule = get_schedule(week, day_of_the_week)
 
@@ -109,3 +109,7 @@ def read_database(message: types.Message):
 def clear_database(message: types.Message):
     print(f"[A]{detect_user(message)} DROPPED DATABASE")
     drop_database()
+
+
+def get_current_week():
+    return max(((datetime.now() - START_LESSONS).days + 1) // 7 + 1, 1)

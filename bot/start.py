@@ -6,7 +6,7 @@ from handlers import cancel_request, input_week, LessonsRequestState, input_day_
     scroll_schedule, send_teacher, TeachersRequestState, input_lesson_name, input_lesson_teacher, start_greetings, \
     random_request, admin_guide, switch_admin_mode, set_permission, show_permission, find_teachers, send_weather, \
     manage_cabs, manage_lessons, wrong_chat_type, send_schedule, send_id, send_guide, send_roles, \
-    check_text_event, check_photo_event
+    check_text_event, check_photo_event, scroll_current_week
 from user_processing_middleware import Middleware, IsAdmin, IsHeadman, IsEditor, IsAllowed, IsClassmate, \
     ContainsEventWord
 from utils import read_database, clear_database
@@ -44,6 +44,8 @@ def register_callbacks():
 
     bot.register_callback_query_handler(scroll_schedule, func=lambda callback: callback.data in ["next", "back"],
                                         is_allowed=True)
+    bot.register_callback_query_handler(scroll_current_week, func=lambda callback: callback.data == 'scroll_current_week',
+                                 is_allowed=True)
 
 
 def register_message_handlers():

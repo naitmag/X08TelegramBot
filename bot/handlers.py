@@ -11,7 +11,8 @@ from telebot.handler_backends import StatesGroup, State
 import config
 from config import cabinets_info, bot, ADMIN_ID, pages, days, define_time, GROUP_ID, roles, events
 from sql_requests import get_teacher, update_user_level, delete_lesson, get_user, create_lesson
-from utils import detect_user, random_element, format_schedule, format_teacher, detect_chat, get_weather
+from utils import detect_user, random_element, format_schedule, format_teacher, detect_chat, get_weather, \
+    get_current_week
 
 
 class TeachersRequestState(StatesGroup):
@@ -133,10 +134,14 @@ def send_schedule(message: types.Message = None):
     day_of_the_week = days.get(day_of_the_week[0]) if day_of_the_week else None
 
     markup = types.InlineKeyboardMarkup()
+
     if day_of_the_week is None:
-        button1 = types.InlineKeyboardButton("◀️", callback_data="back")
-        button2 = types.InlineKeyboardButton("▶️", callback_data="next")
-        markup.row(button1, button2)
+
+        markup.row(types.InlineKeyboardButton("◀️", callback_data="back"),
+                   types.InlineKeyboardButton("▶️", callback_data="next"))
+
+        if week is not None and week != get_current_week():
+            markup.add(types.InlineKeyboardButton("⏏️", callback_data="scroll_current_week"))
 
     bot.send_message(message.chat.id, format_schedule(week, day_of_the_week), parse_mode='html',
                      reply_markup=markup)
@@ -151,7 +156,6 @@ def manage_lessons(message: types.Message):
 
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['action'] = message.text.split()[0][1:]
-        print(data['action'])
         data['progress'] = f"<b>{'➕ Добавить занятие' if data['action'] == 'add' else '➖ Удалить занятие'}</b>\n"
         sended_message = bot.send_message(message.chat.id, data['progress'] + "➡️ Введите неделю:", parse_mode='html',
                                           reply_markup=markup)
@@ -207,10 +211,10 @@ def input_week(querry: types.Message | types.CallbackQuery):
 def input_day_of_the_week(callback: types.CallbackQuery):
     with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
         data['day_of_the_week'] = int(callback.data)
-
-        data['progress'] += f"{'☀️ ' + config.define_week[data['day_of_the_week']][2:]
-                               + '\n' if data['action'] == 'add' else format_schedule(int(data['week']),
-                                                                                      data['day_of_the_week'])}"
+        if data['action'] == 'add':
+            data['progress'] += f"☀️ {config.define_week[data['day_of_the_week']][2:]}\n"
+        else:
+            data['progress'] += format_schedule(int(data['week']), data['day_of_the_week'])
 
         markup = types.InlineKeyboardMarkup()
 
@@ -409,9 +413,17 @@ def send_teacher(message: types.Message):
 
 
 def cancel_request(callback: types.CallbackQuery):
-    bot.edit_message_text("🔍 <b>Запрос был отменен.</b>", callback.message.chat.id, callback.message.message_id,
-                          parse_mode='html')
+    try:
+        with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
+            if len(data) > 0:
+                bot.edit_message_text("🔍 <b>Запрос был отменен.</b>", callback.message.chat.id,
+                                      callback.message.message_id,
+                                      parse_mode='html')
 
+
+    except:
+        bot.answer_callback_query(callback.id, "Вы не отправляли запрос!", show_alert=True)
+        return
     bot.delete_state(callback.from_user.id, callback.message.chat.id)
 
 
@@ -533,11 +545,24 @@ def scroll_schedule(callback: types.CallbackQuery):
 
     if result != callback.message.text:
         try:
+            markup = callback.message.reply_markup
+            if week != get_current_week() and len(callback.message.reply_markup.keyboard) <= 1:
+                markup.add(types.InlineKeyboardButton("⏏️", callback_data="scroll_current_week"))
             bot.edit_message_text(result, callback.message.chat.id, callback.message.message_id,
-                                  parse_mode="html", reply_markup=callback.message.reply_markup)
+                                  parse_mode="html",
+                                  reply_markup=markup)
         except telebot.apihelper.ApiTelegramException:
 
             print(f"[!]{detect_chat(callback.message)}{detect_user(callback)} TO MANY CALLBACK REQUESTS")
+
+
+def scroll_current_week(callback: types.CallbackQuery):
+    markup = types.InlineKeyboardMarkup()
+    markup.row(types.InlineKeyboardButton("◀️", callback_data="back"),
+               types.InlineKeyboardButton("▶️", callback_data="next"))
+
+    bot.edit_message_text(format_schedule(get_current_week()), callback.message.chat.id, callback.message.message_id,
+                          parse_mode='html', reply_markup=markup)
 
 
 def delete_button(callback: types.CallbackQuery):
