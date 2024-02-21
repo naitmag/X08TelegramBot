@@ -428,14 +428,15 @@ def cancel_request(callback: types.CallbackQuery):
 
 
 def send_weather(message: types.Message = None):
-    print(f"[?]({detect_chat(message)}){detect_user(message)} requested weather")
+    if message:
+        print(f"[?]({detect_chat(message)}){detect_user(message)} requested weather")
     picture_number = random.randint(0, 2)
     path = f"{Path(__file__).parent.resolve()}/data/img/weather/{picture_number}.jpg"
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Обновить", callback_data="update_weather"))
     file = open(path, 'rb')
-    bot.send_photo(message.chat.id if message is not None else GROUP_ID, file, get_weather(), parse_mode="html",
+    bot.send_photo(GROUP_ID if message is None else message.chat.id, file, get_weather(), parse_mode="html",
                    reply_markup=markup)
     file.close()
 
