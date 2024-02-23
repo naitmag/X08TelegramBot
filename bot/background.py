@@ -4,7 +4,7 @@ import time
 from pytz import timezone
 
 from config import WEATHER_TIME
-from handlers import send_weather
+from handlers.user_requests import send_weather
 
 
 def auto_messages_control():

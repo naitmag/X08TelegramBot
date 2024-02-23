@@ -26,7 +26,7 @@ def detect_user(data: types.Message | types.CallbackQuery) -> str:
 
 
 def detect_chat(data: types.Message | types.CallbackQuery) -> str:
-    if type(data) is types.CallbackQuery:
+    if isinstance(data, types.CallbackQuery):
         data = data.message
 
     return data.chat.title[:15] if data.chat.title else "Private"
@@ -41,8 +41,10 @@ def check_permissions(querry: types.Message | types.CallbackQuery, requirement_l
     access = userdata[5] >= requirement_level
 
     if not access:
+        action = querry.text if isinstance(querry, types.Message) else querry.data
+        print_feedback(querry, f"don't have permissons {requirement_level}: {action}", '-')
         if not hiden_mode:
-            if type(querry) is types.Message:
+            if isinstance(querry, types.Message):
                 bot.reply_to(querry, "❌<b>У вас нет прав.</b>\n<em>Подробнее: /roles</em>", parse_mode='html')
             else:
                 bot.answer_callback_query(querry.id, "❌У вас нет прав.\nПодробнее: /roles", show_alert=True)
@@ -102,13 +104,17 @@ def format_teacher(data) -> str:
 
 
 def read_database(message: types.Message):
-    print(f"[A]{detect_user(message)} READING TXT FILE")
+    print_feedback(message, 'READING TXT FILE', 'A')
     read_txt()
 
 
 def clear_database(message: types.Message):
-    print(f"[A]{detect_user(message)} DROPPED DATABASE")
+    print_feedback(message, 'DROPPED DATABASE', 'A')
     drop_database()
+
+
+def print_feedback(querry: types.Message | types.CallbackQuery, action: str, action_icon: str = '=', ):
+    print(f"[{action_icon}][{detect_chat(querry)}]{detect_user(querry)} {action}")
 
 
 def get_current_week():
