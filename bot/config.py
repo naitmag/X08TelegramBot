@@ -101,7 +101,7 @@ pages = {
         f"\n\n<blockquote><b>Добавить занятия</b>\n/add</blockquote>"
         f"\n- Вызовет меню добавления занятий.."
         f"\n- Доступ имеют определенные пользователи"
-        f"\n\n<blockquote><b>Удалить занятия</b>\n/add</blockquote>"
+        f"\n\n<blockquote><b>Удалить занятия</b>\n/remove</blockquote>"
         f"\n- Вызовет меню удаления занятий"
         f"\n- Доступ имеют определенные пользователи"
         f"\n\n<blockquote><b>Узнать преподавателя</b>\n/teacher или /t</blockquote>"

@@ -476,7 +476,7 @@ def send_id(message: types.Message):
 def wrong_chat_type(message: types.Message):
     markup = types.InlineKeyboardMarkup()
     if message.chat.type == 'supergroup':
-        markup.add(types.InlineKeyboardButton("Перейти", url="https://t.me/testbot208_bot"))
+        markup.add(types.InlineKeyboardButton("Перейти", url="https://t.me/itcX08bot"))
     bot.send_message(message.chat.id,
                      f"Используйте данную команду в "
                      f"{'группе' if message.chat.type == 'private' else 'личном сообщении'}.",
