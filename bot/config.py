@@ -28,7 +28,7 @@ logger = logging.getLogger()
 logger.setLevel(LOGGING_LEVEL)
 
 file_handler = logging.FileHandler(
-    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'bot', 'logs', 'feedback.log'), mode='a')
+    os.path.join(os.path.dirname(__file__), 'logs', 'feedback.log'), mode='a')
 formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 
 file_handler.setFormatter(formatter)
