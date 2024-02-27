@@ -1,7 +1,7 @@
 import threading
 
 from background import bot_background
-from config import bot
+from config import bot, logger
 from start import on_start
 
 
@@ -10,7 +10,8 @@ def main():
     other_action_thread.start()
 
     on_start()
-    print("[+]BOT STARTED")
+    print('[+]BOT STARTED')
+    logger.info('Bot started')
     bot.polling()
 
 

@@ -1,3 +1,5 @@
+import logging
+import os
 from datetime import datetime
 
 import telebot
@@ -12,13 +14,25 @@ TOKEN = env.str('TOKEN')
 GROUP_ID = env.int('GROUP_ID')
 API_WEATHER = env.str('API_WEATHER')
 CITY = env.str('CITY')
+AUTOWEATHER = env.bool('AUTOWEATHER')
 WEATHER_TIME = env.str('WEATHER_TIME')
-
+AUTOSHUTDOWN = env.bool('AUTOSHUTDOWN')
+SHUTDOWN_TIMES = env.list('SHUTDOWN_TIMES')
+LOGGING_LEVEL = env.str('LOGGING_LEVEL')
 START_LESSONS = datetime(2024, 2, 12)
 
 ADMIN_ID = env.int('ADMIN_ID')
-
 admin_mode = True
+
+logger = logging.getLogger()
+logger.setLevel(LOGGING_LEVEL)
+
+file_handler = logging.FileHandler(
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'bot', 'logs', 'feedback.log'), mode='a')
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 state_storage = StateMemoryStorage()
 

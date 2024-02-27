@@ -6,11 +6,13 @@ import config
 from config import bot
 from handlers.user_states import LessonsRequestState
 from sql_requests import delete_lesson, create_lesson
-from utils import format_schedule, get_current_week, print_feedback
+from utils import format_schedule, get_current_week, log_info
 
 
 def manage_lessons(message: types.Message):
     bot.set_state(message.from_user.id, LessonsRequestState.get_week, message.chat.id)
+
+    log_info(message, "started adding new lesson")
 
     markup = types.InlineKeyboardMarkup()
     markup.add(
@@ -219,5 +221,5 @@ def confirm_lesson(callback: types.CallbackQuery):
                                       callback.message.chat.id, data['message_id'],
                                       parse_mode='html')
         data['progress'] = '1'
-        print_feedback(callback, f"changed lessons: {data}", 'L')
+        log_info(callback, f"changed lessons: {data}")
     bot.delete_state(callback.from_user.id, callback.message.chat.id)

@@ -7,7 +7,7 @@ from pytz import timezone
 from telebot import types
 
 import config
-from config import bot, CITY, API_WEATHER, START_LESSONS, define_week, define_time, ADMIN_ID
+from config import bot, CITY, API_WEATHER, START_LESSONS, define_week, define_time, ADMIN_ID, logger
 from sql_requests import get_schedule, drop_database, read_txt, get_user
 
 
@@ -29,7 +29,7 @@ def detect_chat(data: types.Message | types.CallbackQuery) -> str:
     if isinstance(data, types.CallbackQuery):
         data = data.message
 
-    return data.chat.title[:15] if data.chat.title else "Private"
+    return data.chat.type[0].upper()
 
 
 def check_permissions(querry: types.Message | types.CallbackQuery, requirement_level: int, hiden_mode=False) -> bool:
@@ -42,7 +42,7 @@ def check_permissions(querry: types.Message | types.CallbackQuery, requirement_l
 
     if not access:
         action = querry.text if isinstance(querry, types.Message) else querry.data
-        print_feedback(querry, f"don't have permissons {requirement_level}: {action}", '-')
+        log_info(querry, f"don't have permissons {requirement_level}: {action}")
         if not hiden_mode:
             if isinstance(querry, types.Message):
                 bot.reply_to(querry, "❌<b>У вас нет прав.</b>\n<em>Подробнее: /roles</em>", parse_mode='html')
@@ -104,17 +104,22 @@ def format_teacher(data) -> str:
 
 
 def read_database(message: types.Message):
-    print_feedback(message, 'READING TXT FILE', 'A')
+    log_info(message, 'reading txt file')
     read_txt()
 
 
 def clear_database(message: types.Message):
-    print_feedback(message, 'DROPPED DATABASE', 'A')
+    log_warn(message, 'DROPPED DATABASE')
     drop_database()
 
 
-def print_feedback(querry: types.Message | types.CallbackQuery, action: str, action_icon: str = '=', ):
-    print(f"[{action_icon}][{detect_chat(querry)}]{detect_user(querry)} {action}")
+def log_info(querry: types.Message | types.CallbackQuery, action: str):
+    querry_type = str(type(querry)).split("'")[1].split('.')[2][0]
+    logger.info(f"{detect_chat(querry)}-{querry_type} | {detect_user(querry)} {action}")
+
+
+def log_warn(querry: types.Message | types.CallbackQuery, action: str):
+    logger.warning(f"{detect_user(querry)} {action}")
 
 
 def get_current_week():

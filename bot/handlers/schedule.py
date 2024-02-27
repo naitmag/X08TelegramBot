@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 from config import bot, GROUP_ID, days
-from utils import format_schedule, get_current_week, print_feedback
+from utils import format_schedule, get_current_week, log_info, log_warn
 
 
 def send_schedule(message: types.Message = None):
@@ -12,7 +12,7 @@ def send_schedule(message: types.Message = None):
 
     args = message.text.split()[1:3]
 
-    print_feedback(message, f"requested schedule: {args}", '?')
+    log_info(message, f"requested schedule: {args}")
 
     args.extend([''] * (2 - len(args)))
     week = list(filter(lambda x: x.isdigit(), args))
@@ -39,7 +39,7 @@ def scroll_schedule(callback: types.CallbackQuery):
     week = week - (-1 if callback.data == 'next' else 1)
     week = (week - 1 if week == 0 else week) % 21
 
-    print_feedback(callback, 'scrolls schedule', '>')
+    log_info(callback, 'scrolls schedule')
     result = format_schedule(week)
 
     if result != callback.message.text:
@@ -51,10 +51,11 @@ def scroll_schedule(callback: types.CallbackQuery):
                                   parse_mode="html",
                                   reply_markup=markup)
         except telebot.apihelper.ApiTelegramException:
-            print_feedback(callback, 'TO MANY CALLBACK REQUESTS', '!')
+            log_warn(callback, 'TO MANY CALLBACK REQUESTS')
 
 
 def scroll_current_week(callback: types.CallbackQuery):
+    log_info(callback, "sets schedule to current week")
     markup = types.InlineKeyboardMarkup()
     markup.row(types.InlineKeyboardButton("◀️", callback_data="back"),
                types.InlineKeyboardButton("▶️", callback_data="next"))

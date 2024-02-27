@@ -1,5 +1,7 @@
+
 from telebot import BaseMiddleware, types
 
+from config import logger
 from sql_requests import create_user
 
 
@@ -17,5 +19,5 @@ class Middleware(BaseMiddleware):
 
     def post_process(self, message, data, exception=None):
         if exception:
-            print(f"[!]MIDDLEWARE ERROR: {exception}")
+            logger.error(f'{exception}')
         return

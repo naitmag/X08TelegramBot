@@ -8,12 +8,12 @@ from telebot import types
 from config import cabinets_info, bot, GROUP_ID
 from handlers.user_states import TeachersRequestState
 from sql_requests import get_teacher
-from utils import detect_user, random_element, format_teacher, get_weather, print_feedback
+from utils import detect_user, random_element, format_teacher, get_weather, log_info
 
 
 def manage_cabs(message: types.Message):
     args = message.text.split()[1:5]
-    print_feedback(message, f"requested cabinets: {args}", '?')
+    log_info(message, f"requested cabinets: {args}")
     cabs = [i for i in args if len(i) > 2 and i[:3].isdigit() and not i[3:].isdigit()]
     if cabs == args:
         if len(args) > 0:
@@ -78,7 +78,7 @@ def cancel_request(callback: types.CallbackQuery):
 
 def send_weather(message: types.Message = None):
     if message:
-        print_feedback(message, 'requested weather', '?')
+        log_info(message, 'requested weather')
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Обновить", callback_data="update_weather"))
@@ -94,6 +94,7 @@ def send_weather(message: types.Message = None):
 
 def update_weather(callback: types.CallbackQuery):
     result = get_weather()
+    log_info(callback, 'updates weather')
     try:
         bot.edit_message_caption(result, callback.message.chat.id, callback.message.message_id, parse_mode='html',
                                  reply_markup=callback.message.reply_markup)
@@ -104,7 +105,7 @@ def update_weather(callback: types.CallbackQuery):
 
 def random_request(message: types.Message):
     args = message.text.split()[1:]
-    print_feedback(message, f"randomize: {args}", '?')
+    log_info(message, f"randomize: {args}")
     if args and len(args) >= 2:
         bot.send_dice(message.chat.id)
         time.sleep(4)

@@ -3,16 +3,15 @@ from telebot import types
 import config
 from config import bot, ADMIN_ID, roles
 from sql_requests import update_user_level, get_user
-from utils import print_feedback
+from utils import log_info
 
 
 def switch_admin_mode(message: types.Message):
     if message.from_user.id == ADMIN_ID:
         config.admin_mode = not config.admin_mode
         bot.send_message(message.chat.id, f"🔐 Режим админа теперь: {config.admin_mode} /am")
+        log_info(message, "switched admin mode")
         bot.delete_message(message.chat.id, message.message_id)
-    else:
-        bot.set_message_reaction(message.chat.id, message.message_id, [types.ReactionTypeEmoji("😨")])
 
 
 def set_permission(message: types.Message):
@@ -35,7 +34,7 @@ def set_permission(message: types.Message):
                      parse_mode='html')
     update_user_level(request[0], request[1])
 
-    print_feedback(message, f"set {request[0]} level to {request[1]}", 'A')
+    log_info(message, f"set {request[0]} level to {request[1]}")
     bot.delete_message(message.chat.id, message.message_id)
 
 
@@ -50,4 +49,5 @@ def show_permission(message: types.Message):
                          parse_mode='html')
     else:
         bot.send_message(message.chat.id, f"🧙🏼 <b>Пользователь не найден</b>", parse_mode='html')
+    log_info(message, f"get {request[0]} level")
     bot.delete_message(message.chat.id, message.message_id)

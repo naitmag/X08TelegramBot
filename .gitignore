@@ -10,3 +10,5 @@ tests/
 bot/__pycache__
 bot/data/databases/users.db
 bot/data/databases/lessons.db
+bot/handlers/__pycache__
+bot/logs/
