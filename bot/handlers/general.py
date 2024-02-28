@@ -2,14 +2,17 @@ import random
 
 from telebot import types
 from config import bot, events
+from utils import log_info
 
 
 def send_id(message: types.Message):
+    log_info(message)
     bot.reply_to(message,
                  f"ID: {message.from_user.id}\n{f'CHAT: {message.chat.id}' if message.chat.type != 'private' else ''}")
 
 
 def wrong_chat_type(message: types.Message):
+    log_info(message)
     markup = types.InlineKeyboardMarkup()
     if message.chat.type == 'supergroup':
         markup.add(types.InlineKeyboardButton("Перейти", url="https://t.me/itcX08bot"))
@@ -20,6 +23,7 @@ def wrong_chat_type(message: types.Message):
 
 
 def check_text_event(message: types.Message):
+    log_info(message)
     current_chance = random.randint(0, 100)
     check_list = list(events['text'].items())
     for item in check_list:
@@ -30,5 +34,6 @@ def check_text_event(message: types.Message):
 
 
 def check_photo_event(message: types.Message):
+    log_info(message)
     if random.randint(0, 100) <= events['photo'][0]:
         bot.reply_to(message, events['photo'][1][random.randint(0, len(events['photo'][1]) - 1)])

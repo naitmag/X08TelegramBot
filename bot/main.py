@@ -1,15 +1,16 @@
-import threading
+from threading import Thread
 
-from background import bot_background
+from background import background
 from config import bot, logger
 from start import on_start
 
 
 def main():
-    other_action_thread = threading.Thread(target=bot_background)
-    other_action_thread.start()
-
     on_start()
+
+    bot_background = Thread(target=background)
+    bot_background.start()
+
     print('[+]BOT STARTED')
     logger.info('Bot started')
     bot.polling()

@@ -12,8 +12,9 @@ from utils import detect_user, random_element, format_teacher, get_weather, log_
 
 
 def manage_cabs(message: types.Message):
+    log_info(message)
+
     args = message.text.split()[1:5]
-    log_info(message, f"requested cabinets: {args}")
     cabs = [i for i in args if len(i) > 2 and i[:3].isdigit() and not i[3:].isdigit()]
     if cabs == args:
         if len(args) > 0:
@@ -26,7 +27,7 @@ def manage_cabs(message: types.Message):
             bot_reply = ("<b>Кабинеты:</b>\n - " +
                          "\n - ".join(cabinets_info["cabinets"]).replace('(', ' (').replace('_', ' '))
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("Кто прислал", callback_data="author"))
+            markup.add(types.InlineKeyboardButton("Кто прислал", callback_data="cabs_author"))
             bot.send_message(message.chat.id, bot_reply, parse_mode="html", reply_markup=markup)
 
         else:
@@ -34,12 +35,14 @@ def manage_cabs(message: types.Message):
 
 
 def show_author(callback: types.CallbackQuery):
+    log_info(callback)
     bot.answer_callback_query(callback.id,
                               f"Прислал: {cabinets_info['author']}",
                               show_alert=True)
 
 
 def find_teachers(message: types.Message):
+    log_info(message)
     bot.set_state(message.from_user.id, TeachersRequestState.request, message.chat.id)
 
     markup = types.InlineKeyboardMarkup()
@@ -52,6 +55,7 @@ def find_teachers(message: types.Message):
 
 
 def send_teacher(message: types.Message):
+    log_info(message)
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         result = (f"🔍 Занятия по запросу '<u>{message.text}</u>' :\n"
                   f"{format_teacher(get_teacher(message.text))}")
@@ -63,6 +67,7 @@ def send_teacher(message: types.Message):
 
 
 def cancel_request(callback: types.CallbackQuery):
+    log_info(callback)
     try:
         with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
             if len(data) > 0:
@@ -78,7 +83,7 @@ def cancel_request(callback: types.CallbackQuery):
 
 def send_weather(message: types.Message = None):
     if message:
-        log_info(message, 'requested weather')
+        log_info(message)
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Обновить", callback_data="update_weather"))
@@ -93,8 +98,9 @@ def send_weather(message: types.Message = None):
 
 
 def update_weather(callback: types.CallbackQuery):
+    log_info(callback)
+
     result = get_weather()
-    log_info(callback, 'updates weather')
     try:
         bot.edit_message_caption(result, callback.message.chat.id, callback.message.message_id, parse_mode='html',
                                  reply_markup=callback.message.reply_markup)
@@ -104,8 +110,9 @@ def update_weather(callback: types.CallbackQuery):
 
 
 def random_request(message: types.Message):
+    log_info(message)
+
     args = message.text.split()[1:]
-    log_info(message, f"randomize: {args}")
     if args and len(args) >= 2:
         bot.send_dice(message.chat.id)
         time.sleep(4)

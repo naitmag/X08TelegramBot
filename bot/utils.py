@@ -104,7 +104,7 @@ def format_teacher(data) -> str:
 
 
 def read_database(message: types.Message):
-    log_info(message, 'reading txt file')
+    log_info(message)
     read_txt()
 
 
@@ -113,8 +113,10 @@ def clear_database(message: types.Message):
     drop_database()
 
 
-def log_info(querry: types.Message | types.CallbackQuery, action: str):
+def log_info(querry: types.Message | types.CallbackQuery, action: str = None):
     querry_type = str(type(querry)).split("'")[1].split('.')[2][0]
+    if not action:
+        action = querry.text if isinstance(querry, types.Message) else querry.data
     logger.info(f"{detect_chat(querry)}-{querry_type} | {detect_user(querry)} {action}")
 
 

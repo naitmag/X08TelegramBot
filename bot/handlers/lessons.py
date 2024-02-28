@@ -10,9 +10,9 @@ from utils import format_schedule, get_current_week, log_info
 
 
 def manage_lessons(message: types.Message):
-    bot.set_state(message.from_user.id, LessonsRequestState.get_week, message.chat.id)
+    log_info(message)
 
-    log_info(message, "started adding new lesson")
+    bot.set_state(message.from_user.id, LessonsRequestState.get_week, message.chat.id)
 
     markup = types.InlineKeyboardMarkup()
     markup.add(
@@ -32,6 +32,7 @@ def manage_lessons(message: types.Message):
 
 
 def input_week(querry: types.Message | types.CallbackQuery):
+    log_info(querry)
     if isinstance(querry, types.CallbackQuery):
         week = str(get_current_week() + (1 if querry.data == "next_week" else 0))
         chat_id = querry.message.chat.id
@@ -70,6 +71,7 @@ def input_week(querry: types.Message | types.CallbackQuery):
 
 
 def input_day_of_the_week(callback: types.CallbackQuery):
+    log_info(callback)
     with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
         data['day_of_the_week'] = int(callback.data)
         if data['action'] == 'add':
@@ -98,6 +100,7 @@ def input_day_of_the_week(callback: types.CallbackQuery):
 
 
 def input_lesson_number(callback: types.CallbackQuery):
+    log_info(callback)
     with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
         data['lesson_number'] = int(callback.data)
         data['progress'] += f"🕘 <b>{config.define_time[data['lesson_number']]}</b>\n"
@@ -125,6 +128,7 @@ def input_lesson_number(callback: types.CallbackQuery):
 
 
 def input_lesson_type(callback: types.CallbackQuery):
+    log_info(callback)
     with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
         data['lesson_type'] = config.define_lesson_type[int(callback.data)]
         data['progress'] += f"🔘 <b>{data['lesson_type']}</b>\n"
@@ -140,6 +144,7 @@ def input_lesson_type(callback: types.CallbackQuery):
 
 
 def input_lesson_name(message: types.Message):
+    log_info(message)
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['lesson_name'] = message.text
         data['progress'] += f"📕 <b><em>{data['lesson_name']}</em></b>\n"
@@ -162,6 +167,7 @@ def input_lesson_name(message: types.Message):
 
 
 def input_lesson_teacher(message: types.Message):
+    log_info(message)
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['teacher'] = message.text
         data['progress'] += f"👨‍🎓 <b>{data['teacher']}</b>\n"
@@ -183,6 +189,7 @@ def input_lesson_teacher(message: types.Message):
 
 
 def confirm_lesson(callback: types.CallbackQuery):
+    log_info(callback)
     with bot.retrieve_data(callback.from_user.id, callback.message.chat.id) as data:
         if data['action'] == 'add':
             try:
@@ -221,5 +228,4 @@ def confirm_lesson(callback: types.CallbackQuery):
                                       callback.message.chat.id, data['message_id'],
                                       parse_mode='html')
         data['progress'] = '1'
-        log_info(callback, f"changed lessons: {data}")
     bot.delete_state(callback.from_user.id, callback.message.chat.id)

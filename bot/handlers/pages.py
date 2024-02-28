@@ -8,7 +8,7 @@ from utils import detect_user, log_info
 
 
 def start_greetings(message: types.Message):
-    log_info(message, 'started the bot')
+    log_info(message)
 
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("Команды", callback_data="help")
@@ -28,7 +28,8 @@ def start_greetings(message: types.Message):
 
 
 def home_page(callback: types.CallbackQuery):
-    log_info(callback, "viewing the home page")
+    log_info(callback)
+
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("Команды", callback_data="help")
     button2 = types.InlineKeyboardButton("Роли", callback_data="roles")
@@ -39,7 +40,8 @@ def home_page(callback: types.CallbackQuery):
 
 
 def pages_button(callback: types.CallbackQuery):
-    log_info(callback, "viewing the pages")
+    log_info(callback)
+
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Назад", callback_data="home"))
     bot.edit_message_text(pages[callback.data], callback.message.chat.id, callback.message.message_id,
@@ -47,14 +49,16 @@ def pages_button(callback: types.CallbackQuery):
 
 
 def send_roles(message: types.Message):
-    log_info(message, "viewing the roles page")
+    log_info(message)
+
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Скрыть", callback_data='hide'))
     bot.send_message(message.chat.id, pages['roles'], parse_mode='html', reply_markup=markup)
 
 
 def send_guide(message: types.Message):
-    log_info(message, "viewing the guide page")
+    log_info(message)
+
     if message.chat.type == 'supergroup':
         bot.reply_to(message, pages["help"], parse_mode="html")
         return
@@ -65,7 +69,8 @@ def send_guide(message: types.Message):
 
 
 def admin_guide(message: types.Message):
-    log_info(message, "viewing the admin commands page")
+    log_info(message)
+
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("Скрыть", callback_data="hide"))
     bot.send_message(message.chat.id, pages["admin"], parse_mode="html", reply_markup=markup)
@@ -73,4 +78,5 @@ def admin_guide(message: types.Message):
 
 
 def delete_button(callback: types.CallbackQuery):
+    log_info(callback)
     bot.delete_message(callback.message.chat.id, callback.message.message_id)

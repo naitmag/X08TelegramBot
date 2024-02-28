@@ -20,7 +20,7 @@ def auto_shutdown_control(current_time: str):
         exit()
 
 
-def bot_background():
+def background():
     while True:
         current_time = datetime.datetime.now(tz=timezone("Europe/Minsk")).strftime("%H%M%S")
         auto_messages_control(current_time)

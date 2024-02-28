@@ -1,11 +1,6 @@
 from telebot import custom_filters
 
-import handlers.admin as admin
-import handlers.general as general
-import handlers.lessons as lessons
-import handlers.pages as pages
-import handlers.schedule as schedule
-import handlers.user_requests as user_requests
+from handlers import admin, general, lessons, pages, schedule, user_requests
 from config import bot
 from filters import IsAdmin, IsHeadman, IsEditor, IsAllowed, IsClassmate, ContainsEventWord
 from handlers.user_states import LessonsRequestState, TeachersRequestState
@@ -42,13 +37,13 @@ def register_callbacks():
     bot.register_callback_query_handler(pages.delete_button, func=lambda callback: callback.data == "hide")
     bot.register_callback_query_handler(pages.pages_button,
                                         func=lambda callback: callback.data in ["help", "contacts", "roles"])
-    bot.register_callback_query_handler(user_requests.show_author, func=lambda callback: callback.data == "author")
+    bot.register_callback_query_handler(user_requests.show_author, func=lambda callback: callback.data == "cabs_author")
 
     bot.register_callback_query_handler(schedule.scroll_schedule,
-                                        func=lambda callback: callback.data in ["next", "back"],
+                                        func=lambda callback: callback.data in ["schedule_next", "schedule_back"],
                                         is_allowed=True)
     bot.register_callback_query_handler(schedule.scroll_current_week,
-                                        func=lambda callback: callback.data == 'scroll_current_week',
+                                        func=lambda callback: callback.data == 'schedule_current_week',
                                         is_allowed=True)
 
 

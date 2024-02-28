@@ -1,11 +1,10 @@
 import logging
 import os
 from datetime import datetime
-
 import telebot
 from telebot import apihelper, StateMemoryStorage
-
 from environs import Env
+from middleware import ExceptionHandler
 
 env = Env()
 env.read_env()
@@ -34,9 +33,11 @@ formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
+exception_handler = ExceptionHandler(logger)
 state_storage = StateMemoryStorage()
 
-bot = telebot.TeleBot(TOKEN, use_class_middlewares=True, state_storage=state_storage)
+bot = telebot.TeleBot(TOKEN, use_class_middlewares=True, state_storage=state_storage,
+                      exception_handler=exception_handler)
 apihelper.ENABLE_MIDDLEWARE = True
 
 cabinets_info = {"cabinets": [], "author": 'неизвестно'}
