@@ -3,8 +3,9 @@ import time
 
 from pytz import timezone
 
-from config import bot, WEATHER_TIME, logger, AUTOWEATHER, AUTOSHUTDOWN, SHUTDOWN_TIMES
+from config import bot, WEATHER_TIME, AUTOWEATHER, AUTOSHUTDOWN, SHUTDOWN_TIMES
 from handlers.user_requests import send_weather
+from logger import logger
 
 
 def auto_messages_control(current_time: str):

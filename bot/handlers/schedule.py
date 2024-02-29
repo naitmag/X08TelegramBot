@@ -37,7 +37,7 @@ def scroll_schedule(callback: types.CallbackQuery):
     log_info(callback)
 
     week = int(callback.message.text.split()[4])
-    week = week - (-1 if callback.data == 'next' else 1)
+    week = week - (-1 if callback.data == 'schedule_next' else 1)
     week = (week - 1 if week == 0 else week) % 21
 
     result = format_schedule(week)

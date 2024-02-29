@@ -1,9 +1,9 @@
-import logging
-import os
 from datetime import datetime
+from logger import logger
 import telebot
-from telebot import apihelper, StateMemoryStorage
 from environs import Env
+from telebot import apihelper, StateMemoryStorage
+
 from middleware import ExceptionHandler
 
 env = Env()
@@ -22,16 +22,6 @@ START_LESSONS = datetime(2024, 2, 12)
 
 ADMIN_ID = env.int('ADMIN_ID')
 admin_mode = True
-
-logger = logging.getLogger()
-logger.setLevel(LOGGING_LEVEL)
-
-file_handler = logging.FileHandler(
-    os.path.join(os.path.dirname(__file__), 'logs', 'feedback.log'), mode='a')
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
-
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 
 exception_handler = ExceptionHandler(logger)
 state_storage = StateMemoryStorage()
