@@ -2,11 +2,11 @@ import sqlite3
 
 from telebot import types
 
-import bot.config as config
-from bot.config import bot
-from bot.handlers.user_states import LessonsRequestState
-from bot.sql_requests import delete_lesson, create_lesson
-from bot.utils import format_schedule, get_current_week, log_info
+import config
+from config import bot
+from handlers.user_states import LessonsRequestState
+from sql_requests import delete_lesson, create_lesson
+from utils import format_schedule, get_current_week, log_info
 
 
 def manage_lessons(message: types.Message):

@@ -1,8 +1,8 @@
 import random
 
 from telebot import types
-from bot.config import bot, events
-from bot.utils import log_info
+from config import bot, events
+from utils import log_info
 
 
 def send_id(message: types.Message):

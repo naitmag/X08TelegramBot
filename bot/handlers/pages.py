@@ -3,8 +3,8 @@ import time
 
 from telebot import types
 
-from bot.config import bot, ADMIN_ID
-from bot.utils import detect_user, log_info
+from config import bot, ADMIN_ID
+from utils import detect_user, log_info
 
 
 def read_page(pagename: str, ignore_lines: int = 1):

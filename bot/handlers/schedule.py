@@ -1,8 +1,8 @@
 import telebot
 from telebot import types
 
-from bot.config import bot, GROUP_ID, days
-from bot.utils import format_schedule, get_current_week, log_info, log_warn
+from config import bot, GROUP_ID, days
+from utils import format_schedule, get_current_week, log_info, log_warn
 
 
 def send_schedule(message: types.Message = None):

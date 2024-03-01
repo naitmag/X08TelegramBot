@@ -5,10 +5,10 @@ import time
 import telebot.apihelper
 from telebot import types
 
-from bot.config import cabinets_info, bot, GROUP_ID
-from bot.handlers.user_states import TeachersRequestState
-from bot.sql_requests import get_teacher
-from bot.utils import detect_user, random_element, format_teacher, get_weather, log_info
+from config import cabinets_info, bot, GROUP_ID
+from handlers.user_states import TeachersRequestState
+from sql_requests import get_teacher
+from utils import detect_user, random_element, format_teacher, get_weather, log_info
 
 
 def manage_cabs(message: types.Message):
