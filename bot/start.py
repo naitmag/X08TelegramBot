@@ -33,7 +33,7 @@ def register_callbacks():
                                         func=lambda callback: True)
     bot.register_callback_query_handler(user_requests.update_weather,
                                         func=lambda callback: callback.data == "update_weather")
-    bot.register_callback_query_handler(pages.home_page, func=lambda callback: callback.data == "home")
+    bot.register_callback_query_handler(pages.home_page, func=lambda callback: callback.data == "home2")
     bot.register_callback_query_handler(pages.delete_button, func=lambda callback: callback.data == "hide")
     bot.register_callback_query_handler(pages.pages_button,
                                         func=lambda callback: callback.data in ["help", "contacts", "roles"])

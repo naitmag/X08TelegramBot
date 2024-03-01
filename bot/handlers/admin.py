@@ -1,9 +1,9 @@
 from telebot import types
 
-import config
-from config import bot, ADMIN_ID, roles
-from sql_requests import update_user_level, get_user
-from utils import log_info
+import bot.config as config
+from bot.config import bot, ADMIN_ID, roles
+from bot.sql_requests import update_user_level, get_user
+from bot.utils import log_info
 
 
 def switch_admin_mode(message: types.Message):
