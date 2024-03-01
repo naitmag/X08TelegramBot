@@ -9,11 +9,11 @@ class Formatter(logging.Formatter):
     """override logging.Formatter to use an aware datetime object"""
 
     @staticmethod
-    def converter(timestamp):
+    def converter():
         return datetime.now(tz=pytz.timezone("Europe/Minsk"))
 
     def formatTime(self, record, datefmt=None):
-        dt = self.converter(record.created)
+        dt = self.converter()
         if datefmt:
             s = dt.strftime(datefmt)
         else:

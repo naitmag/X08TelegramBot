@@ -34,6 +34,6 @@ def check_text_event(message: types.Message):
 
 
 def check_photo_event(message: types.Message):
-    log_info(message)
+    log_info(message, f'Photo')
     if random.randint(0, 100) <= events['photo'][0]:
         bot.reply_to(message, events['photo'][1][random.randint(0, len(events['photo'][1]) - 1)])
