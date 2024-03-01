@@ -1,6 +1,8 @@
 from telebot import types
 
-import bot.config as config
+#need to fix this import
+#      vvvvvv
+import config
 from bot.config import bot, ADMIN_ID, roles
 from bot.sql_requests import update_user_level, get_user
 from bot.utils import log_info

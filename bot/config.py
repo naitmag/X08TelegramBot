@@ -28,7 +28,6 @@ state_storage = StateMemoryStorage()
 
 bot = telebot.TeleBot(TOKEN, use_class_middlewares=True, state_storage=state_storage,
                       exception_handler=exception_handler)
-apihelper.ENABLE_MIDDLEWARE = True
 
 cabinets_info = {"cabinets": [], "author": 'неизвестно'}
 
