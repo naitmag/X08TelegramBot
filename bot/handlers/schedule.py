@@ -42,16 +42,22 @@ def scroll_schedule(callback: types.CallbackQuery):
 
     result = format_schedule(week)
 
-    if result != callback.message.text:
-        try:
-            markup = callback.message.reply_markup
-            if week != get_current_week() and len(callback.message.reply_markup.keyboard) <= 1:
-                markup.add(types.InlineKeyboardButton("⏏️", callback_data="schedule_current_week"))
-            bot.edit_message_text(result, callback.message.chat.id, callback.message.message_id,
-                                  parse_mode="html",
-                                  reply_markup=markup)
-        except telebot.apihelper.ApiTelegramException:
-            log_warn(callback, 'TO MANY CALLBACK REQUESTS')
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(
+        types.InlineKeyboardButton("◀️", callback_data="schedule_back"),
+        types.InlineKeyboardButton("▶️", callback_data="schedule_next")
+    )
+    if week != get_current_week():
+        markup.add(
+            types.InlineKeyboardButton("↩️", callback_data="schedule_current_week")
+        )
+    try:
+        bot.edit_message_text(result, callback.message.chat.id, callback.message.message_id,
+                              parse_mode="html",
+                              reply_markup=markup)
+    except telebot.apihelper.ApiTelegramException as _ex:
+        log_warn(callback, f'CANNOT SCROLL SCHEDULE {_ex} ')
 
 
 def scroll_current_week(callback: types.CallbackQuery):

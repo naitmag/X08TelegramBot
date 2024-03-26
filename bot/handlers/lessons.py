@@ -23,7 +23,7 @@ def manage_lessons(message: types.Message):
     )
 
     with (bot.retrieve_data(message.from_user.id, message.chat.id) as data):
-        data['action'] = message.text.split()[0][1:]
+        data['action'] = message.text.split("@")[0][1:]
         data['progress'] = f"<b>{'➕ Добавить занятие' if data['action'] == 'add' else '➖ Удалить занятие'}</b>\n"
 
         data['message_id'] = bot.send_message(message.chat.id, data['progress'] + "➡️ Введите неделю или интервал:",
