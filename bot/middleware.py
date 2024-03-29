@@ -14,6 +14,7 @@ class ExceptionHandler(telebot.ExceptionHandler):
     def handle(self, exception):
         print(f"[!]MIDDLEWARE EXCEPTION: \"{exception}\". Check logs for details.")
         self.logger.error(f"{''.join(traceback.format_exception(exception))}")
+        traceback.print_exc()
         return True
 
 

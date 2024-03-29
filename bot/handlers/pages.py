@@ -22,7 +22,7 @@ def start_greetings(message: types.Message):
     markup.add(
         types.InlineKeyboardButton("Команды", callback_data="help"),
         types.InlineKeyboardButton("Роли", callback_data="roles"),
-        markup.add(types.InlineKeyboardButton("Контакты", callback_data="contacts"))
+        types.InlineKeyboardButton("Контакты", callback_data="contacts")
     )
 
     image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'img', 'pages',
