@@ -23,11 +23,8 @@ class Middleware(BaseMiddleware):
         self.update_types = ['message', 'callback_query']
 
     def pre_process(self, request: types.Message | types.CallbackQuery, data):
-        data['user_id'] = request.from_user.id
-        data['name'] = request.from_user.first_name
-        data['lastname'] = request.from_user.last_name
-        data['username'] = request.from_user.username
-        create_user(data['user_id'], data['name'], data['lastname'], data['username'])
+        create_user(request.from_user.id, request.from_user.first_name, request.from_user.last_name,
+                    request.from_user.username)
 
     def post_process(self, message, data, exception=None):
         pass

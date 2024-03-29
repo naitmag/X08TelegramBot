@@ -18,11 +18,12 @@ def read_page(pagename: str, ignore_lines: int = 1):
 def start_greetings(message: types.Message):
     log_info(message)
 
-    markup = types.InlineKeyboardMarkup()
-    button1 = types.InlineKeyboardButton("Команды", callback_data="help")
-    button2 = types.InlineKeyboardButton("Роли", callback_data="roles")
-    markup.row(button1, button2)
-    markup.add(types.InlineKeyboardButton("Контакты", callback_data="contacts"))
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("Команды", callback_data="help"),
+        types.InlineKeyboardButton("Роли", callback_data="roles"),
+        markup.add(types.InlineKeyboardButton("Контакты", callback_data="contacts"))
+    )
 
     image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'img', 'pages',
                               'start.jpg')
@@ -38,11 +39,13 @@ def start_greetings(message: types.Message):
 def home_page(callback: types.CallbackQuery):
     log_info(callback)
 
-    markup = types.InlineKeyboardMarkup()
-    button1 = types.InlineKeyboardButton("Команды", callback_data="help")
-    button2 = types.InlineKeyboardButton("Роли", callback_data="roles")
-    markup.row(button1, button2)
-    markup.add(types.InlineKeyboardButton("Контакты", callback_data="contacts"))
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("Команды", callback_data="help"),
+        types.InlineKeyboardButton("Роли", callback_data="roles"),
+        markup.add(types.InlineKeyboardButton("Контакты", callback_data="contacts"))
+    )
+
     bot.edit_message_text(read_page('home2'), callback.message.chat.id, callback.message.message_id, parse_mode="html",
                           reply_markup=markup)
 
